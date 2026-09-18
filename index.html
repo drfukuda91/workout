@@ -94,10 +94,6 @@
                     <span class="hidden sm:inline">Novo Exercício</span>
                 </button>
                 
-                <button id="restoreDefaultsBtn" title="Restaurar Exercícios Padrão" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card text-gray-500 hover:text-red-500 flex items-center justify-center touch-active transition-all">
-                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                </button>
-                
                 <button id="themeToggleBtn" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center touch-active transition-all">
                     <i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>
                 </button>
@@ -233,12 +229,12 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Project URL</label>
-                    <input type="url" id="sbUrlInput" placeholder="https://tjosbhtafwkpdtfeczzv.supabase.co/rest/v1/" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <input type="url" id="sbUrlInput" placeholder="https://tjosbhtafwkpdtfeczzv.supabase.co" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Anon / Public API Key</label>
-                    <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3NiaHRhZndrcGR0ZmVjenp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzY3MjcsImV4cCI6MjEwNTMxMjcyN30.flHp68ZyO5jpJI6urkRAbX_YwrC4-WiggU2ot1WEQ1w" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 </div>
 
                 <div class="pt-2 flex items-center justify-between gap-3">
@@ -256,23 +252,9 @@
     </div>
 
     <script>
-        // Configurações padrão de fábrica para o Supabase
+        // Credenciais do Supabase
         const DEFAULT_SB_URL = 'https://tjosbhtafwkpdtfeczzv.supabase.co';
         const DEFAULT_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3NiaHRhZndrcGR0ZmVjenp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzY3MjcsImV4cCI6MjEwNTMxMjcyN30.flHp68ZyO5jpJI6urkRAbX_YwrC4-WiggU2ot1WEQ1w';
-
-        const DEFAULT_EXERCISES = [
-            { id: 'ex_1', name: 'Supino Reto com Barra', category: 'peito', sets: '4x 8-12 reps', target: 'Peitoral Maior', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 30 },
-            { id: 'ex_2', name: 'Supino Inclinado Halteres', category: 'peito', sets: '3x 10-12 reps', target: 'Peitoral Superior', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80', weight: 22 },
-            { id: 'ex_3', name: 'Puxada Alta Frontal', category: 'costas', sets: '4x 10-12 reps', target: 'Dorsal e Bíceps', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&q=80', weight: 45 },
-            { id: 'ex_4', name: 'Remada Curvada Barra', category: 'costas', sets: '4x 8-10 reps', target: 'Miolo das Costas', image: 'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=500&q=80', weight: 35 },
-            { id: 'ex_5', name: 'Agachamento Livre', category: 'pernas', sets: '4x 8-10 reps', target: 'Quadríceps e Glúteos', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80', weight: 50 },
-            { id: 'ex_6', name: 'Leg Press 45°', category: 'pernas', sets: '4x 10-12 reps', target: 'Membros Inferiores', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 120 },
-            { id: 'ex_7', name: 'Desenvolvimento Halteres', category: 'ombros', sets: '4x 8-10 reps', target: 'Deltoide Anterior', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 16 },
-            { id: 'ex_8', name: 'Elevação Lateral', category: 'ombros', sets: '4x 12-15 reps', target: 'Deltoide Lateral', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 8 },
-            { id: 'ex_9', name: 'Rosca Direta Barra W', category: 'bracos', sets: '3x 10-12 reps', target: 'Bíceps Braquial', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 12 },
-            { id: 'ex_10', name: 'Tríceps Corda Polia', category: 'bracos', sets: '4x 10-12 reps', target: 'Tríceps Lateral', image: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80', weight: 25 },
-            { id: 'ex_11', name: 'Abdominal Infra na Barra', category: 'abs', sets: '3x 15 reps', target: 'Core / Infra', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 0 }
-        ];
 
         const CATEGORIES = [
             { id: 'all', name: 'Todos', icon: 'grid' },
@@ -289,6 +271,7 @@
         let exercises = [];
         let currentCategory = 'all';
         let searchQuery = '';
+        let realtimeSubscription = null;
 
         const categoryNav = document.getElementById('categoryNav');
         const exerciseList = document.getElementById('exerciseList');
@@ -325,7 +308,6 @@
         const openNewModalBtn = document.getElementById('openNewModalBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const cancelModalBtn = document.getElementById('cancelModalBtn');
-        const restoreDefaultsBtn = document.getElementById('restoreDefaultsBtn');
         const btnPresetImage = document.getElementById('btnPresetImage');
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const imagePreview = document.getElementById('imagePreview');
@@ -348,6 +330,7 @@
                     sbUrlInput.value = url;
                     sbKeyInput.value = key;
                     updateSupabaseStatusUI(true);
+                    subscribeToRealtime();
                 } catch (e) {
                     console.error('Erro ao conectar Supabase:', e);
                     isSupabaseActive = false;
@@ -357,6 +340,47 @@
                 isSupabaseActive = false;
                 updateSupabaseStatusUI(false);
             }
+        }
+
+        function subscribeToRealtime() {
+            if (!isSupabaseActive || !supabaseClient) return;
+
+            if (realtimeSubscription) {
+                supabaseClient.removeChannel(realtimeSubscription);
+            }
+
+            realtimeSubscription = supabaseClient
+                .channel('public:exercises')
+                .on(
+                    'postgres_changes', 
+                    { event: '*', schema: 'public', table: 'exercises' }, 
+                    (payload) => {
+                        handleRealtimeUpdate(payload);
+                    }
+                )
+                .subscribe();
+        }
+
+        function handleRealtimeUpdate(payload) {
+            const { eventType, new: newRow, old: oldRow } = payload;
+
+            if (eventType === 'INSERT') {
+                const exists = exercises.some(e => String(e.id) === String(newRow.id));
+                if (!exists) {
+                    exercises.unshift(newRow);
+                }
+            } else if (eventType === 'UPDATE') {
+                const index = exercises.findIndex(e => String(e.id) === String(newRow.id));
+                if (index !== -1) {
+                    exercises[index] = newRow;
+                } else {
+                    exercises.unshift(newRow);
+                }
+            } else if (eventType === 'DELETE') {
+                exercises = exercises.filter(e => String(e.id) !== String(oldRow.id));
+            }
+
+            renderExercises();
         }
 
         function updateSupabaseStatusUI(connected) {
@@ -379,11 +403,7 @@
                     
                     if (error) throw error;
 
-                    if (data && data.length > 0) {
-                        exercises = data;
-                    } else {
-                        await syncDefaultsToSupabase();
-                    }
+                    exercises = data || [];
                 } catch (e) {
                     console.warn('Erro ao ler do Supabase, fallback LocalStorage:', e);
                     loadLocalExercises();
@@ -394,22 +414,12 @@
             renderExercises();
         }
 
-        async function syncDefaultsToSupabase() {
-            if (!isSupabaseActive || !supabaseClient) return;
-            try {
-                await supabaseClient.from('exercises').upsert(DEFAULT_EXERCISES);
-                exercises = [...DEFAULT_EXERCISES];
-            } catch (err) {
-                console.error("Erro ao sincronizar dados:", err);
-            }
-        }
-
         function loadLocalExercises() {
             const stored = localStorage.getItem('pulse_custom_exercises');
             if (stored) {
-                try { exercises = JSON.parse(stored); } catch (e) { exercises = [...DEFAULT_EXERCISES]; }
+                try { exercises = JSON.parse(stored); } catch (e) { exercises = []; }
             } else {
-                exercises = [...DEFAULT_EXERCISES];
+                exercises = [];
                 saveLocalExercises();
             }
         }
@@ -691,6 +701,9 @@
         disconnectSbBtn.addEventListener('click', () => {
             localStorage.removeItem('pulse_sb_url');
             localStorage.removeItem('pulse_sb_key');
+            if (realtimeSubscription && supabaseClient) {
+                supabaseClient.removeChannel(realtimeSubscription);
+            }
             supabaseClient = null;
             isSupabaseActive = false;
             updateSupabaseStatusUI(false);
@@ -784,19 +797,6 @@
                 renderExercises();
             }
         };
-
-        restoreDefaultsBtn.addEventListener('click', async () => {
-            if (confirm('Restaurar lista padrão de exercícios?')) {
-                exercises = [...DEFAULT_EXERCISES];
-                if (isSupabaseActive && supabaseClient) {
-                    await syncDefaultsToSupabase();
-                } else {
-                    saveLocalExercises();
-                }
-                showToast('Padrões restaurados!');
-                renderExercises();
-            }
-        });
 
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value;
