@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PULSE — Minimalist Workout Tracker & Manager</title>
+    <title>HiperCore - Ficha de Treino</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -77,7 +77,7 @@
                     <i data-lucide="dumbbell" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <span class="font-extrabold text-lg tracking-tight block leading-none">PULSE<span class="text-brand-500">.fit</span></span>
+                    <span class="font-extrabold text-lg tracking-tight block leading-none">HiperCore</span>
                     <span id="currentDateStr" class="text-[10px] text-gray-400 font-medium"></span>
                 </div>
             </div>
@@ -173,9 +173,11 @@
                             <option value="peito">Peito</option>
                             <option value="costas">Costas</option>
                             <option value="pernas">Pernas</option>
-                            <option value="ombros">Ombros</option>
-                            <option value="bracos">Braços</option>
-                            <option value="abs">Abdômen / Core</option>
+                            <option value="ombro/trapézio">Ombro / Trapézio</option>
+                            <option value="biceps">Bíceps / Antebraço</option>
+                            <option value="triceps">Tríceps</option>
+                            <option value="antebraco">Antebraço</option>
+                            <option value="abs">Abdômen</option>
                         </select>
                     </div>
 
@@ -257,12 +259,12 @@
         const DEFAULT_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3NiaHRhZndrcGR0ZmVjenp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzY3MjcsImV4cCI6MjEwNTMxMjcyN30.flHp68ZyO5jpJI6urkRAbX_YwrC4-WiggU2ot1WEQ1w';
 
         const CATEGORIES = [
-            { id: 'all', name: 'Todos', icon: 'grid' },
             { id: 'peito', name: 'Peito', icon: 'shield' },
-            { id: 'costas', name: 'Costas', icon: 'compass' },
-            { id: 'pernas', name: 'Pernas', icon: 'zap' },
-            { id: 'ombros', name: 'Ombros', icon: 'up-pointing-triangle' },
-            { id: 'bracos', name: 'Braços', icon: 'activity' },
+            { id: 'costas', name: 'Costas', icon: 'shield' },
+            { id: 'pernas', name: 'Pernas', icon: 'square' },
+            { id: 'ombro/trapézio', name: 'Ombro / Trapézio', icon: 'triangle' },
+            { id: 'biceps', name: 'Bíceps / Antebraço', icon: 'BicepsFlexed' },
+            { id: 'triceps', name: 'Tríceps', icon: 'BicepsFlexed' },
             { id: 'abs', name: 'Abdômen', icon: 'disc' },
         ];
 
@@ -728,7 +730,9 @@
                 costas: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&q=80',
                 pernas: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80',
                 ombros: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80',
-                bracos: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80',
+                biceps: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80',
+                triceps: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80',
+                antebraco: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80',
                 abs: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80'
             };
             const cat = formCategory.value || 'peito';
