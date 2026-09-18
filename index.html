@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PULSE — Minimalist Workout Tracker & Manager</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -51,14 +54,12 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Impede zoom indesejado no iOS ao focar em campos de texto */
         @media screen and (max-width: 768px) {
             input, select, textarea {
                 font-size: 16px !important;
             }
         }
 
-        /* Estilo para animação de clique em botões touch */
         .touch-active:active {
             transform: scale(0.95);
         }
@@ -66,7 +67,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 min-h-screen pb-24 antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- Header Minimalista e Otimizado para Mobile -->
+    <!-- Header Minimalista -->
     <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-dark-bg/80 border-b border-gray-200 dark:border-dark-border">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
             
@@ -81,9 +82,15 @@
                 </div>
             </div>
 
-            <!-- Botões de Ação Topo com áreas de toque otimizadas (44px) -->
+            <!-- Botões de Ação do Topo -->
             <div class="flex items-center gap-1.5">
-                <button id="openNewModalBtn" class="min-h-[44px] min-w-[44px] px-3.5 py-2 text-xs font-semibold rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 touch-active transition-all">
+                <!-- Status Supabase / Conexão -->
+                <button id="openSupabaseModalBtn" class="min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card flex items-center gap-1.5 touch-active transition-all">
+                    <div id="supabaseStatusDot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></div>
+                    <span id="supabaseStatusText" class="hidden sm:inline text-xs">Nuvem</span>
+                </button>
+
+                <button id="openNewModalBtn" class="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 touch-active transition-all">
                     <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
                     <span class="hidden sm:inline">Novo Exercício</span>
                 </button>
@@ -101,7 +108,7 @@
 
     <main class="max-w-4xl mx-auto px-4 pt-4 space-y-4">
 
-        <!-- Banner Bento Grid Style Responsivo -->
+        <!-- Banner Bento Grid -->
         <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div class="col-span-2 p-4 sm:p-5 rounded-3xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card flex flex-col justify-between shadow-sm">
                 <div>
@@ -126,12 +133,12 @@
             </div>
         </section>
 
-        <!-- Filtro por Categoria Muscular - Touch Scroll Horizontal Smooth -->
+        <!-- Filtro por Categoria -->
         <nav class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-xs font-medium -mx-4 px-4 sm:mx-0 sm:px-0" id="categoryNav">
-            <!-- Categorias injetadas via JavaScript -->
+            <!-- Injetado dinamicamente -->
         </nav>
 
-        <!-- Barra de Busca Inteligente -->
+        <!-- Barra de Busca -->
         <div class="relative">
             <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
             <input type="text" id="searchInput" placeholder="Buscar exercício ou grupo muscular..." class="w-full pl-11 pr-10 py-3 text-sm rounded-2xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-sm">
@@ -142,16 +149,15 @@
 
         <!-- Lista de Exercícios -->
         <section class="space-y-3" id="exerciseList">
-            <!-- Exercícios serão renderizados aqui dinamicamente -->
+            <!-- Exercícios serão renderizados aqui -->
         </section>
 
     </main>
 
-    <!-- Modal Adicionar / Editar Exercício (Bottom Sheet no Mobile / Modal Centralizado no Desktop) -->
+    <!-- MODAL 1: Adicionar / Editar Exercício -->
     <div id="exerciseModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-white dark:bg-dark-card border-t sm:border border-gray-200 dark:border-dark-border rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto" id="modalContainer">
             
-            <!-- Handle visual para arrastar/indicação mobile -->
             <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden"></div>
 
             <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-dark-border">
@@ -189,19 +195,18 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Instruções / Músculos Alvo</label>
-                    <input type="text" id="formTarget" placeholder="Ex: Foco na porção média do peitoral" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Músculos Alvo</label>
+                    <input type="text" id="formTarget" placeholder="Ex: Peitoral maior" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 </div>
 
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">URL da Imagem / GIF</label>
+                        <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">URL da Imagem</label>
                         <button type="button" id="btnPresetImage" class="text-xs font-bold text-brand-500 hover:underline touch-active py-1">Usar Imagem Padrão</button>
                     </div>
                     <input type="url" id="formImage" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 </div>
 
-                <!-- Preview Rápido de Imagem -->
                 <div id="imagePreviewContainer" class="hidden rounded-2xl overflow-hidden h-28 border border-gray-200 dark:border-dark-border relative">
                     <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover">
                 </div>
@@ -214,14 +219,49 @@
         </div>
     </div>
 
-    <!-- Toast de Notificação Touch-friendly -->
+    <!-- MODAL 2: Configurações da API Supabase -->
+    <div id="supabaseModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white dark:bg-dark-card border-t sm:border border-gray-200 dark:border-dark-border rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300" id="supabaseModalContainer">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-dark-border">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="cloud" class="w-5 h-5 text-brand-500"></i>
+                    <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">Conexão Supabase</h2>
+                </div>
+                <button id="closeSupabaseModalBtn" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white touch-active">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="supabaseForm" class="mt-4 space-y-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Insira suas credenciais do projeto Supabase para sincronizar treinos e cargas na nuvem.</p>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Project URL</label>
+                    <input type="url" id="sbUrlInput" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Anon / Public API Key</label>
+                    <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiI..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <div class="pt-2 flex items-center justify-between gap-3">
+                    <button type="button" id="disconnectSbBtn" class="text-xs font-bold text-red-500 hover:underline touch-active">Desconectar</button>
+                    <button type="submit" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 text-white rounded-2xl shadow-md touch-active">Salvar e Conectar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 px-5 py-3.5 bg-gray-900/90 backdrop-blur-md text-white dark:bg-white/95 dark:text-gray-900 rounded-2xl shadow-2xl border border-gray-800 dark:border-gray-200 text-xs font-bold transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 z-50">
         <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
         <span id="toastMessage">Alterações salvas!</span>
     </div>
 
     <script>
-        // --- BASE DE DADOS PADRÃO ---
+        // --- BASE DE DADOS INITIAL (FALLBACK LOCAL) ---
         const DEFAULT_EXERCISES = [
             { id: 'ex_1', name: 'Supino Reto com Barra', category: 'peito', sets: '4x 8-12 reps', target: 'Peitoral Maior', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 30 },
             { id: 'ex_2', name: 'Supino Inclinado Halteres', category: 'peito', sets: '3x 10-12 reps', target: 'Peitoral Superior', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80', weight: 22 },
@@ -229,11 +269,11 @@
             { id: 'ex_4', name: 'Remada Curvada Barra', category: 'costas', sets: '4x 8-10 reps', target: 'Miolo das Costas', image: 'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=500&q=80', weight: 35 },
             { id: 'ex_5', name: 'Agachamento Livre', category: 'pernas', sets: '4x 8-10 reps', target: 'Quadríceps e Glúteos', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80', weight: 50 },
             { id: 'ex_6', name: 'Leg Press 45°', category: 'pernas', sets: '4x 10-12 reps', target: 'Membros Inferiores', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 120 },
-            { id: 'ex_7', name: 'Desenvolvimento Halteres', category: 'ombros', sets: '4x 8-10 reps', target: 'Deltoide Anterior / Lateral', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 16 },
+            { id: 'ex_7', name: 'Desenvolvimento Halteres', category: 'ombros', sets: '4x 8-10 reps', target: 'Deltoide Anterior', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 16 },
             { id: 'ex_8', name: 'Elevação Lateral', category: 'ombros', sets: '4x 12-15 reps', target: 'Deltoide Lateral', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 8 },
             { id: 'ex_9', name: 'Rosca Direta Barra W', category: 'bracos', sets: '3x 10-12 reps', target: 'Bíceps Braquial', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 12 },
             { id: 'ex_10', name: 'Tríceps Corda Polia', category: 'bracos', sets: '4x 10-12 reps', target: 'Tríceps Lateral', image: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80', weight: 25 },
-            { id: 'ex_11', name: 'Abdominal Infra na Barra', category: 'abs', sets: '3x 15 reps', target: 'Core / Infra Abdominal', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 0 }
+            { id: 'ex_11', name: 'Abdominal Infra na Barra', category: 'abs', sets: '3x 15 reps', target: 'Core / Infra', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 0 }
         ];
 
         const CATEGORIES = [
@@ -247,6 +287,8 @@
         ];
 
         // --- ESTADO GLOBAL ---
+        let supabaseClient = null;
+        let isSupabaseActive = false;
         let exercises = [];
         let currentCategory = 'all';
         let searchQuery = '';
@@ -263,7 +305,19 @@
         const themeIcon = document.getElementById('themeIcon');
         const currentDateStr = document.getElementById('currentDateStr');
 
-        // Modal
+        // Status Supabase
+        const openSupabaseModalBtn = document.getElementById('openSupabaseModalBtn');
+        const supabaseStatusDot = document.getElementById('supabaseStatusDot');
+        const supabaseStatusText = document.getElementById('supabaseStatusText');
+        const supabaseModal = document.getElementById('supabaseModal');
+        const supabaseModalContainer = document.getElementById('supabaseModalContainer');
+        const closeSupabaseModalBtn = document.getElementById('closeSupabaseModalBtn');
+        const supabaseForm = document.getElementById('supabaseForm');
+        const sbUrlInput = document.getElementById('sbUrlInput');
+        const sbKeyInput = document.getElementById('sbKeyInput');
+        const disconnectSbBtn = document.getElementById('disconnectSbBtn');
+
+        // Modal Exercício
         const exerciseModal = document.getElementById('exerciseModal');
         const modalContainer = document.getElementById('modalContainer');
         const modalTitle = document.getElementById('modalTitle');
@@ -282,25 +336,122 @@
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const imagePreview = document.getElementById('imagePreview');
 
-        function loadExercises() {
-            const stored = localStorage.getItem('pulse_custom_exercises');
-            if (stored) {
+        // --- INICIALIZAÇÃO SUPABASE ---
+        function initSupabase() {
+            const url = localStorage.getItem('pulse_sb_url');
+            const key = localStorage.getItem('pulse_sb_key');
+
+            if (url && key && window.supabase) {
                 try {
-                    exercises = JSON.parse(stored);
+                    supabaseClient = window.supabase.createClient(url, key);
+                    isSupabaseActive = true;
+                    sbUrlInput.value = url;
+                    sbKeyInput.value = key;
+                    updateSupabaseStatusUI(true);
                 } catch (e) {
-                    exercises = [...DEFAULT_EXERCISES];
+                    console.error('Erro ao conectar Supabase:', e);
+                    isSupabaseActive = false;
+                    updateSupabaseStatusUI(false);
                 }
             } else {
-                exercises = [...DEFAULT_EXERCISES];
-                saveExercisesToStorage();
+                isSupabaseActive = false;
+                updateSupabaseStatusUI(false);
             }
         }
 
-        function saveExercisesToStorage() {
+        function updateSupabaseStatusUI(connected) {
+            if (connected) {
+                supabaseStatusDot.className = "w-2.5 h-2.5 rounded-full bg-brand-500 shadow-sm shadow-brand-500";
+                supabaseStatusText.textContent = "Nuvem (Supabase)";
+            } else {
+                supabaseStatusDot.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse";
+                supabaseStatusText.textContent = "Modo Local";
+            }
+        }
+
+        async function fetchExercises() {
+            if (isSupabaseActive && supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('exercises')
+                        .select('*')
+                        .order('name');
+                    
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        exercises = data;
+                    } else {
+                        // Se a tabela no Supabase estiver vazia, popula com o default
+                        await syncDefaultsToSupabase();
+                    }
+                } catch (e) {
+                    console.warn('Erro ao ler do Supabase, usando localStorage:', e);
+                    loadLocalExercises();
+                }
+            } else {
+                loadLocalExercises();
+            }
+            renderExercises();
+        }
+
+        async function syncDefaultsToSupabase() {
+            if (!isSupabaseActive || !supabaseClient) return;
+            try {
+                await supabaseClient.from('exercises').upsert(DEFAULT_EXERCISES);
+                exercises = [...DEFAULT_EXERCISES];
+            } catch (err) {
+                console.error("Erro ao sincronizar defaults:", err);
+            }
+        }
+
+        function loadLocalExercises() {
+            const stored = localStorage.getItem('pulse_custom_exercises');
+            if (stored) {
+                try { exercises = JSON.parse(stored); } catch (e) { exercises = [...DEFAULT_EXERCISES]; }
+            } else {
+                exercises = [...DEFAULT_EXERCISES];
+                saveLocalExercises();
+            }
+        }
+
+        function saveLocalExercises() {
             localStorage.setItem('pulse_custom_exercises', JSON.stringify(exercises));
         }
 
-        // --- TEMA (DARK / LIGHT) ---
+        // --- BANCO DE DADOS: OPERAÇÕES CRUD ---
+        async function saveExerciseDB(exerciseObj) {
+            if (isSupabaseActive && supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('exercises')
+                        .upsert([exerciseObj]);
+                    if (error) throw error;
+                } catch (err) {
+                    console.error('Erro ao salvar no Supabase:', err);
+                    showToast('Erro ao salvar na nuvem!');
+                }
+            }
+            // Sempre faz backup no localStorage
+            saveLocalExercises();
+        }
+
+        async function deleteExerciseDB(id) {
+            if (isSupabaseActive && supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('exercises')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                } catch (err) {
+                    console.error('Erro ao excluir no Supabase:', err);
+                }
+            }
+            saveLocalExercises();
+        }
+
+        // --- INTERFACE DE USUÁRIO E TEMA ---
         function initTheme() {
             const isDark = localStorage.getItem('pulse_theme') !== 'light';
             if (isDark) {
@@ -357,7 +508,6 @@
                 return matchesCategory && matchesSearch;
             });
 
-            // Atualiza estatísticas
             totalExerciseCount.textContent = filtered.length;
             savedWeightsCount.textContent = filtered.filter(ex => ex.weight && Number(ex.weight) > 0).length;
 
@@ -383,16 +533,12 @@
                 return `
                     <div class="p-4 rounded-3xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card shadow-sm hover:border-gray-300 dark:hover:border-gray-700 transition-all space-y-3.5">
                         
-                        <!-- Linha Superior: Imagem + Info + Ações -->
                         <div class="flex items-center justify-between gap-3">
-                            
                             <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <!-- Preview de Imagem Otimizada -->
                                 <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-dark-input flex-shrink-0 border border-gray-200 dark:border-dark-border">
                                     <img src="${imgUrl}" alt="${ex.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';">
                                 </div>
 
-                                <!-- Detalhes do Exercício -->
                                 <div class="truncate flex-1">
                                     <div class="flex items-center gap-2">
                                         <h3 class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate leading-snug">${ex.name}</h3>
@@ -406,47 +552,23 @@
                                 </div>
                             </div>
 
-                            <!-- Botões de Ação CRUD Touch (Editar / Excluir) -->
                             <div class="flex items-center gap-0.5 flex-shrink-0">
-                                <button 
-                                    onclick="editExercise('${ex.id}')"
-                                    title="Editar"
-                                    class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-brand-500 hover:bg-brand-500/10 touch-active"
-                                >
+                                <button onclick="editExercise('${ex.id}')" class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-brand-500 hover:bg-brand-500/10 touch-active">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
-                                <button 
-                                    onclick="deleteExercise('${ex.id}')"
-                                    title="Excluir"
-                                    class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/10 touch-active"
-                                >
+                                <button onclick="deleteExercise('${ex.id}')" class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/10 touch-active">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Linha Inferior: Controle Touch de Carga (Incremento / Decremento / Input) -->
                         <div class="pt-2 border-t border-gray-100 dark:border-dark-border/80 flex items-center justify-between gap-2">
                             <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Carga Atual:</span>
 
                             <div class="flex items-center gap-1.5">
-                                <!-- Botão Menor -1kg -->
-                                <button 
-                                    onclick="adjustWeight('${ex.id}', -1)"
-                                    class="min-h-[44px] min-w-[44px] rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-700 dark:text-gray-200 font-bold text-sm flex items-center justify-center touch-active transition-all"
-                                >
-                                    -1
-                                </button>
+                                <button onclick="adjustWeight('${ex.id}', -1)" class="min-h-[44px] min-w-[44px] rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-700 dark:text-gray-200 font-bold text-sm flex items-center justify-center touch-active transition-all">-1</button>
+                                <button onclick="adjustWeight('${ex.id}', -0.5)" class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all">-0.5</button>
 
-                                <!-- Botão Menor -0.5kg -->
-                                <button 
-                                    onclick="adjustWeight('${ex.id}', -0.5)"
-                                    class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all"
-                                >
-                                    -0.5
-                                </button>
-
-                                <!-- Input Otimizado para Mobile -->
                                 <div class="relative w-24">
                                     <input 
                                         type="number" 
@@ -462,21 +584,8 @@
                                     <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">kg</span>
                                 </div>
 
-                                <!-- Botão Maior +0.5kg -->
-                                <button 
-                                    onclick="adjustWeight('${ex.id}', 0.5)"
-                                    class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all"
-                                >
-                                    +0.5
-                                </button>
-
-                                <!-- Botão Maior +1kg -->
-                                <button 
-                                    onclick="adjustWeight('${ex.id}', 1)"
-                                    class="min-h-[44px] min-w-[44px] rounded-2xl border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500/20 active:bg-brand-500/30 text-brand-500 font-bold text-sm flex items-center justify-center touch-active transition-all"
-                                >
-                                    +1
-                                </button>
+                                <button onclick="adjustWeight('${ex.id}', 0.5)" class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all">+0.5</button>
+                                <button onclick="adjustWeight('${ex.id}', 1)" class="min-h-[44px] min-w-[44px] rounded-2xl border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500/20 active:bg-brand-500/30 text-brand-500 font-bold text-sm flex items-center justify-center touch-active transition-all">+1</button>
                             </div>
                         </div>
 
@@ -493,7 +602,8 @@
                 let current = parseFloat(exercises[exIndex].weight) || 0;
                 let updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
                 exercises[exIndex].weight = updated;
-                saveExercisesToStorage();
+                
+                saveExerciseDB(exercises[exIndex]);
                 triggerHaptic();
                 renderExercises();
             }
@@ -504,20 +614,21 @@
             if (exIndex !== -1) {
                 const val = parseFloat(value);
                 exercises[exIndex].weight = !isNaN(val) && val >= 0 ? val : 0;
-                saveExercisesToStorage();
+                
+                saveExerciseDB(exercises[exIndex]);
                 triggerHaptic();
                 showToast('Carga salva!');
                 renderExercises();
             }
         };
 
-        // Feedback Tátil para Dispositivos Móveis
         function triggerHaptic() {
             if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate(12);
             }
         }
 
+        // --- CONTROLE DOS MODAIS ---
         function openModal(isEdit = false) {
             modalTitle.textContent = isEdit ? 'Editar Exercício' : 'Novo Exercício';
             exerciseModal.classList.remove('opacity-0', 'pointer-events-none');
@@ -544,6 +655,45 @@
 
         closeModalBtn.addEventListener('click', closeModal);
         cancelModalBtn.addEventListener('click', closeModal);
+
+        // Supabase Modal
+        openSupabaseModalBtn.addEventListener('click', () => {
+            supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
+            supabaseModalContainer.classList.remove('translate-y-full', 'sm:scale-95');
+            supabaseModalContainer.classList.add('translate-y-0', 'sm:scale-100');
+        });
+
+        closeSupabaseModalBtn.addEventListener('click', () => {
+            supabaseModalContainer.classList.remove('translate-y-0', 'sm:scale-100');
+            supabaseModalContainer.classList.add('translate-y-full', 'sm:scale-95');
+            supabaseModal.classList.add('opacity-0', 'pointer-events-none');
+        });
+
+        supabaseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = sbUrlInput.value.trim();
+            const key = sbKeyInput.value.trim();
+
+            if (url && key) {
+                localStorage.setItem('pulse_sb_url', url);
+                localStorage.setItem('pulse_sb_key', key);
+                initSupabase();
+                await fetchExercises();
+                showToast('Supabase Conectado!');
+            }
+            closeSupabaseModalBtn.click();
+        });
+
+        disconnectSbBtn.addEventListener('click', () => {
+            localStorage.removeItem('pulse_sb_url');
+            localStorage.removeItem('pulse_sb_key');
+            supabaseClient = null;
+            isSupabaseActive = false;
+            updateSupabaseStatusUI(false);
+            showToast('Modo Local Ativado.');
+            closeSupabaseModalBtn.click();
+            fetchExercises();
+        });
 
         // Preview da imagem
         formImage.addEventListener('input', (e) => {
@@ -573,42 +723,35 @@
         });
 
         // Submit Form
-        exerciseForm.addEventListener('submit', (e) => {
+        exerciseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const id = editExerciseId.value;
+            const id = editExerciseId.value || 'ex_' + Date.now();
             const name = formName.value.trim();
             const category = formCategory.value;
             const sets = formSets.value.trim() || '3x 10 reps';
             const target = formTarget.value.trim() || '';
             const image = formImage.value.trim() || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';
 
-            if (id) {
+            const exObj = { id, name, category, sets, target, image, weight: 0 };
+
+            if (editExerciseId.value) {
                 const index = exercises.findIndex(e => e.id === id);
                 if (index !== -1) {
-                    exercises[index] = { ...exercises[index], name, category, sets, target, image };
+                    exObj.weight = exercises[index].weight || 0;
+                    exercises[index] = exObj;
                     showToast('Exercício modificado!');
                 }
             } else {
-                const newEx = {
-                    id: 'ex_' + Date.now(),
-                    name,
-                    category,
-                    sets,
-                    target,
-                    image,
-                    weight: 0
-                };
-                exercises.unshift(newEx);
+                exercises.unshift(exObj);
                 showToast('Novo exercício adicionado!');
             }
 
-            saveExercisesToStorage();
+            await saveExerciseDB(exObj);
             closeModal();
             renderExercises();
         });
 
-        // Editar
         window.editExercise = function(id) {
             const ex = exercises.find(e => e.id === id);
             if (!ex) return;
@@ -628,24 +771,26 @@
             openModal(true);
         };
 
-        // Excluir
-        window.deleteExercise = function(id) {
+        window.deleteExercise = async function(id) {
             const ex = exercises.find(e => e.id === id);
             if (!ex) return;
 
             if (confirm(`Deseja remover "${ex.name}"?`)) {
                 exercises = exercises.filter(e => e.id !== id);
-                saveExercisesToStorage();
+                await deleteExerciseDB(id);
                 showToast('Exercício removido.');
                 renderExercises();
             }
         };
 
-        // Restaurar Padrões
-        restoreDefaultsBtn.addEventListener('click', () => {
+        restoreDefaultsBtn.addEventListener('click', async () => {
             if (confirm('Restaurar lista padrão de exercícios?')) {
                 exercises = [...DEFAULT_EXERCISES];
-                saveExercisesToStorage();
+                if (isSupabaseActive && supabaseClient) {
+                    await syncDefaultsToSupabase();
+                } else {
+                    saveLocalExercises();
+                }
                 showToast('Padrões restaurados!');
                 renderExercises();
             }
@@ -689,12 +834,12 @@
         }
 
         // --- STARTUP ---
-        window.onload = function() {
+        window.onload = async function() {
             setFormattedDate();
             initTheme();
-            loadExercises();
+            initSupabase();
             renderCategories();
-            renderExercises();
+            await fetchExercises();
         };
     </script>
 </body>
