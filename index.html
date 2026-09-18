@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PULSE — Minimalist Workout Tracker & Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d'
+                        },
+                        dark: {
+                            bg: '#09090b',
+                            card: '#121215',
+                            border: '#27272a',
+                            input: '#18181b',
+                            hover: '#1f1f23'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        * { transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Impede zoom indesejado no iOS ao focar em campos de texto */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Estilo para animação de clique em botões touch */
+        .touch-active:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 min-h-screen pb-24 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Minimalista e Otimizado para Mobile -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-dark-bg/80 border-b border-gray-200 dark:border-dark-border">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-black shadow-inner">
+                    <i data-lucide="dumbbell" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-lg tracking-tight block leading-none">PULSE<span class="text-brand-500">.fit</span></span>
+                    <span id="currentDateStr" class="text-[10px] text-gray-400 font-medium"></span>
+                </div>
+            </div>
+
+            <!-- Botões de Ação Topo com áreas de toque otimizadas (44px) -->
+            <div class="flex items-center gap-1.5">
+                <button id="openNewModalBtn" class="min-h-[44px] min-w-[44px] px-3.5 py-2 text-xs font-semibold rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 touch-active transition-all">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+                    <span class="hidden sm:inline">Novo Exercício</span>
+                </button>
+                
+                <button id="restoreDefaultsBtn" title="Restaurar Exercícios Padrão" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card text-gray-500 hover:text-red-500 flex items-center justify-center touch-active transition-all">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                </button>
+                
+                <button id="themeToggleBtn" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center touch-active transition-all">
+                    <i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pt-4 space-y-4">
+
+        <!-- Banner Bento Grid Style Responsivo -->
+        <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="col-span-2 p-4 sm:p-5 rounded-3xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card flex flex-col justify-between shadow-sm">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-brand-500 bg-brand-500/10 px-2.5 py-1 rounded-xl">Treino Ativo</span>
+                    </div>
+                    <h1 id="currentCategoryTitle" class="text-lg sm:text-xl font-bold tracking-tight mt-2 text-gray-900 dark:text-gray-100">Todos os Exercícios</h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 hidden sm:block">Ajuste suas cargas e acompanhe sua evolução em tempo real.</p>
+                </div>
+            </div>
+
+            <div class="col-span-2 sm:col-span-1 p-4 sm:p-5 rounded-3xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card flex items-center justify-around gap-2 shadow-sm">
+                <div class="text-center">
+                    <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total</span>
+                    <span id="totalExerciseCount" class="text-2xl font-black text-gray-900 dark:text-gray-100">0</span>
+                </div>
+                <div class="h-8 w-px bg-gray-200 dark:bg-dark-border"></div>
+                <div class="text-center">
+                    <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Com Carga</span>
+                    <span id="savedWeightsCount" class="text-2xl font-black text-brand-500">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtro por Categoria Muscular - Touch Scroll Horizontal Smooth -->
+        <nav class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-xs font-medium -mx-4 px-4 sm:mx-0 sm:px-0" id="categoryNav">
+            <!-- Categorias injetadas via JavaScript -->
+        </nav>
+
+        <!-- Barra de Busca Inteligente -->
+        <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+            <input type="text" id="searchInput" placeholder="Buscar exercício ou grupo muscular..." class="w-full pl-11 pr-10 py-3 text-sm rounded-2xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-sm">
+            <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Lista de Exercícios -->
+        <section class="space-y-3" id="exerciseList">
+            <!-- Exercícios serão renderizados aqui dinamicamente -->
+        </section>
+
+    </main>
+
+    <!-- Modal Adicionar / Editar Exercício (Bottom Sheet no Mobile / Modal Centralizado no Desktop) -->
+    <div id="exerciseModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white dark:bg-dark-card border-t sm:border border-gray-200 dark:border-dark-border rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto" id="modalContainer">
+            
+            <!-- Handle visual para arrastar/indicação mobile -->
+            <div class="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-dark-border">
+                <h2 id="modalTitle" class="text-base font-bold text-gray-900 dark:text-gray-100">Novo Exercício</h2>
+                <button id="closeModalBtn" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white touch-active">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="exerciseForm" class="mt-4 space-y-4">
+                <input type="hidden" id="editExerciseId">
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Nome do Exercício *</label>
+                    <input type="text" id="formName" required placeholder="Ex: Supino Reto com Barra" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Grupo Muscular *</label>
+                        <select id="formCategory" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                            <option value="peito">Peito</option>
+                            <option value="costas">Costas</option>
+                            <option value="pernas">Pernas</option>
+                            <option value="ombros">Ombros</option>
+                            <option value="bracos">Braços</option>
+                            <option value="abs">Abdômen / Core</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Séries / Repetições</label>
+                        <input type="text" id="formSets" placeholder="Ex: 4x 10-12 reps" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Instruções / Músculos Alvo</label>
+                    <input type="text" id="formTarget" placeholder="Ex: Foco na porção média do peitoral" class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">URL da Imagem / GIF</label>
+                        <button type="button" id="btnPresetImage" class="text-xs font-bold text-brand-500 hover:underline touch-active py-1">Usar Imagem Padrão</button>
+                    </div>
+                    <input type="url" id="formImage" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <!-- Preview Rápido de Imagem -->
+                <div id="imagePreviewContainer" class="hidden rounded-2xl overflow-hidden h-28 border border-gray-200 dark:border-dark-border relative">
+                    <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover">
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-3 pb-2 sm:pb-0">
+                    <button type="button" id="cancelModalBtn" class="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-hover rounded-2xl touch-active">Cancelar</button>
+                    <button type="submit" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white rounded-2xl shadow-md shadow-brand-500/20 touch-active">Salvar Exercício</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação Touch-friendly -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 px-5 py-3.5 bg-gray-900/90 backdrop-blur-md text-white dark:bg-white/95 dark:text-gray-900 rounded-2xl shadow-2xl border border-gray-800 dark:border-gray-200 text-xs font-bold transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 z-50">
+        <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
+        <span id="toastMessage">Alterações salvas!</span>
+    </div>
+
+    <script>
+        // --- BASE DE DADOS PADRÃO ---
+        const DEFAULT_EXERCISES = [
+            { id: 'ex_1', name: 'Supino Reto com Barra', category: 'peito', sets: '4x 8-12 reps', target: 'Peitoral Maior', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 30 },
+            { id: 'ex_2', name: 'Supino Inclinado Halteres', category: 'peito', sets: '3x 10-12 reps', target: 'Peitoral Superior', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80', weight: 22 },
+            { id: 'ex_3', name: 'Puxada Alta Frontal', category: 'costas', sets: '4x 10-12 reps', target: 'Dorsal e Bíceps', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&q=80', weight: 45 },
+            { id: 'ex_4', name: 'Remada Curvada Barra', category: 'costas', sets: '4x 8-10 reps', target: 'Miolo das Costas', image: 'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=500&q=80', weight: 35 },
+            { id: 'ex_5', name: 'Agachamento Livre', category: 'pernas', sets: '4x 8-10 reps', target: 'Quadríceps e Glúteos', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80', weight: 50 },
+            { id: 'ex_6', name: 'Leg Press 45°', category: 'pernas', sets: '4x 10-12 reps', target: 'Membros Inferiores', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 120 },
+            { id: 'ex_7', name: 'Desenvolvimento Halteres', category: 'ombros', sets: '4x 8-10 reps', target: 'Deltoide Anterior / Lateral', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 16 },
+            { id: 'ex_8', name: 'Elevação Lateral', category: 'ombros', sets: '4x 12-15 reps', target: 'Deltoide Lateral', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80', weight: 8 },
+            { id: 'ex_9', name: 'Rosca Direta Barra W', category: 'bracos', sets: '3x 10-12 reps', target: 'Bíceps Braquial', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80', weight: 12 },
+            { id: 'ex_10', name: 'Tríceps Corda Polia', category: 'bracos', sets: '4x 10-12 reps', target: 'Tríceps Lateral', image: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80', weight: 25 },
+            { id: 'ex_11', name: 'Abdominal Infra na Barra', category: 'abs', sets: '3x 15 reps', target: 'Core / Infra Abdominal', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 0 }
+        ];
+
+        const CATEGORIES = [
+            { id: 'all', name: 'Todos', icon: 'grid' },
+            { id: 'peito', name: 'Peito', icon: 'shield' },
+            { id: 'costas', name: 'Costas', icon: 'compass' },
+            { id: 'pernas', name: 'Pernas', icon: 'zap' },
+            { id: 'ombros', name: 'Ombros', icon: 'up-pointing-triangle' },
+            { id: 'bracos', name: 'Braços', icon: 'activity' },
+            { id: 'abs', name: 'Abdômen', icon: 'disc' },
+        ];
+
+        // --- ESTADO GLOBAL ---
+        let exercises = [];
+        let currentCategory = 'all';
+        let searchQuery = '';
+
+        // --- REFERÊNCIAS DOM ---
+        const categoryNav = document.getElementById('categoryNav');
+        const exerciseList = document.getElementById('exerciseList');
+        const currentCategoryTitle = document.getElementById('currentCategoryTitle');
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const totalExerciseCount = document.getElementById('totalExerciseCount');
+        const savedWeightsCount = document.getElementById('savedWeightsCount');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const currentDateStr = document.getElementById('currentDateStr');
+
+        // Modal
+        const exerciseModal = document.getElementById('exerciseModal');
+        const modalContainer = document.getElementById('modalContainer');
+        const modalTitle = document.getElementById('modalTitle');
+        const exerciseForm = document.getElementById('exerciseForm');
+        const editExerciseId = document.getElementById('editExerciseId');
+        const formName = document.getElementById('formName');
+        const formCategory = document.getElementById('formCategory');
+        const formSets = document.getElementById('formSets');
+        const formTarget = document.getElementById('formTarget');
+        const formImage = document.getElementById('formImage');
+        const openNewModalBtn = document.getElementById('openNewModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const restoreDefaultsBtn = document.getElementById('restoreDefaultsBtn');
+        const btnPresetImage = document.getElementById('btnPresetImage');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+
+        function loadExercises() {
+            const stored = localStorage.getItem('pulse_custom_exercises');
+            if (stored) {
+                try {
+                    exercises = JSON.parse(stored);
+                } catch (e) {
+                    exercises = [...DEFAULT_EXERCISES];
+                }
+            } else {
+                exercises = [...DEFAULT_EXERCISES];
+                saveExercisesToStorage();
+            }
+        }
+
+        function saveExercisesToStorage() {
+            localStorage.setItem('pulse_custom_exercises', JSON.stringify(exercises));
+        }
+
+        // --- TEMA (DARK / LIGHT) ---
+        function initTheme() {
+            const isDark = localStorage.getItem('pulse_theme') !== 'light';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                themeIcon.setAttribute('data-lucide', 'sun');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('pulse_theme', isDark ? 'dark' : 'light');
+            themeIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+            triggerHaptic();
+        });
+
+        function renderCategories() {
+            categoryNav.innerHTML = CATEGORIES.map(cat => {
+                const isActive = cat.id === currentCategory;
+                return `
+                    <button 
+                        onclick="setCategory('${cat.id}')"
+                        class="min-h-[44px] px-4 py-2 rounded-2xl flex items-center gap-2 whitespace-nowrap transition-all border touch-active ${
+                            isActive 
+                            ? 'bg-brand-500/15 border-brand-500 text-brand-500 font-bold shadow-sm' 
+                            : 'bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700'
+                        }">
+                        <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+                        <span class="text-xs">${cat.name}</span>
+                    </button>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        window.setCategory = function(catId) {
+            currentCategory = catId;
+            const catObj = CATEGORIES.find(c => c.id === catId);
+            currentCategoryTitle.textContent = catObj ? (catObj.id === 'all' ? 'Todos os Exercícios' : `Exercícios de ${catObj.name}`) : 'Exercícios';
+            renderCategories();
+            renderExercises();
+            triggerHaptic();
+        };
+
+        function renderExercises() {
+            const filtered = exercises.filter(ex => {
+                const matchesCategory = currentCategory === 'all' || ex.category === currentCategory;
+                const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                      (ex.target && ex.target.toLowerCase().includes(searchQuery.toLowerCase()));
+                return matchesCategory && matchesSearch;
+            });
+
+            // Atualiza estatísticas
+            totalExerciseCount.textContent = filtered.length;
+            savedWeightsCount.textContent = filtered.filter(ex => ex.weight && Number(ex.weight) > 0).length;
+
+            if (filtered.length === 0) {
+                exerciseList.innerHTML = `
+                    <div class="p-8 text-center border border-dashed border-gray-200 dark:border-dark-border rounded-3xl bg-white/50 dark:bg-dark-card/50">
+                        <i data-lucide="dumbbell" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Nenhum exercício encontrado.</p>
+                        <button onclick="openModal()" class="mt-3 px-4 py-2.5 text-xs bg-brand-500 text-white font-bold rounded-2xl inline-flex items-center gap-1.5 touch-active shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Criar Exercício
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            exerciseList.innerHTML = filtered.map(ex => {
+                const weight = ex.weight !== undefined && ex.weight !== null ? ex.weight : 0;
+                const hasWeight = Number(weight) > 0;
+                const imgUrl = ex.image || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';
+
+                return `
+                    <div class="p-4 rounded-3xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card shadow-sm hover:border-gray-300 dark:hover:border-gray-700 transition-all space-y-3.5">
+                        
+                        <!-- Linha Superior: Imagem + Info + Ações -->
+                        <div class="flex items-center justify-between gap-3">
+                            
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <!-- Preview de Imagem Otimizada -->
+                                <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-dark-input flex-shrink-0 border border-gray-200 dark:border-dark-border">
+                                    <img src="${imgUrl}" alt="${ex.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';">
+                                </div>
+
+                                <!-- Detalhes do Exercício -->
+                                <div class="truncate flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate leading-snug">${ex.name}</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-semibold text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded-lg text-[10px] uppercase">${ex.category}</span>
+                                        <span class="text-gray-400">•</span>
+                                        <span>${ex.sets || 'Séries livres'}</span>
+                                    </p>
+                                    ${ex.target ? `<p class="text-[11px] text-gray-400 truncate mt-0.5">${ex.target}</p>` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Botões de Ação CRUD Touch (Editar / Excluir) -->
+                            <div class="flex items-center gap-0.5 flex-shrink-0">
+                                <button 
+                                    onclick="editExercise('${ex.id}')"
+                                    title="Editar"
+                                    class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-brand-500 hover:bg-brand-500/10 touch-active"
+                                >
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button 
+                                    onclick="deleteExercise('${ex.id}')"
+                                    title="Excluir"
+                                    class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-500/10 touch-active"
+                                >
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Linha Inferior: Controle Touch de Carga (Incremento / Decremento / Input) -->
+                        <div class="pt-2 border-t border-gray-100 dark:border-dark-border/80 flex items-center justify-between gap-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Carga Atual:</span>
+
+                            <div class="flex items-center gap-1.5">
+                                <!-- Botão Menor -1kg -->
+                                <button 
+                                    onclick="adjustWeight('${ex.id}', -1)"
+                                    class="min-h-[44px] min-w-[44px] rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-700 dark:text-gray-200 font-bold text-sm flex items-center justify-center touch-active transition-all"
+                                >
+                                    -1
+                                </button>
+
+                                <!-- Botão Menor -0.5kg -->
+                                <button 
+                                    onclick="adjustWeight('${ex.id}', -0.5)"
+                                    class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all"
+                                >
+                                    -0.5
+                                </button>
+
+                                <!-- Input Otimizado para Mobile -->
+                                <div class="relative w-24">
+                                    <input 
+                                        type="number" 
+                                        inputmode="decimal"
+                                        min="0"
+                                        max="999"
+                                        step="0.5"
+                                        placeholder="0"
+                                        value="${weight > 0 ? weight : ''}"
+                                        onchange="updateExerciseWeight('${ex.id}', this.value)"
+                                        class="w-full h-[44px] pl-2.5 pr-7 py-2 text-sm font-black rounded-2xl border ${hasWeight ? 'border-brand-500/50 bg-brand-500/5 text-brand-500' : 'border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input text-gray-900 dark:text-gray-100'} focus:outline-none focus:ring-2 focus:ring-brand-500 text-right transition-all"
+                                    >
+                                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">kg</span>
+                                </div>
+
+                                <!-- Botão Maior +0.5kg -->
+                                <button 
+                                    onclick="adjustWeight('${ex.id}', 0.5)"
+                                    class="min-h-[44px] px-2.5 rounded-2xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-input hover:bg-gray-100 dark:hover:bg-dark-hover active:bg-brand-500/20 text-gray-500 dark:text-gray-400 font-semibold text-xs flex items-center justify-center touch-active transition-all"
+                                >
+                                    +0.5
+                                </button>
+
+                                <!-- Botão Maior +1kg -->
+                                <button 
+                                    onclick="adjustWeight('${ex.id}', 1)"
+                                    class="min-h-[44px] min-w-[44px] rounded-2xl border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500/20 active:bg-brand-500/30 text-brand-500 font-bold text-sm flex items-center justify-center touch-active transition-all"
+                                >
+                                    +1
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        window.adjustWeight = function(id, delta) {
+            const exIndex = exercises.findIndex(e => e.id === id);
+            if (exIndex !== -1) {
+                let current = parseFloat(exercises[exIndex].weight) || 0;
+                let updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
+                exercises[exIndex].weight = updated;
+                saveExercisesToStorage();
+                triggerHaptic();
+                renderExercises();
+            }
+        };
+
+        window.updateExerciseWeight = function(id, value) {
+            const exIndex = exercises.findIndex(e => e.id === id);
+            if (exIndex !== -1) {
+                const val = parseFloat(value);
+                exercises[exIndex].weight = !isNaN(val) && val >= 0 ? val : 0;
+                saveExercisesToStorage();
+                triggerHaptic();
+                showToast('Carga salva!');
+                renderExercises();
+            }
+        };
+
+        // Feedback Tátil para Dispositivos Móveis
+        function triggerHaptic() {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(12);
+            }
+        }
+
+        function openModal(isEdit = false) {
+            modalTitle.textContent = isEdit ? 'Editar Exercício' : 'Novo Exercício';
+            exerciseModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContainer.classList.remove('translate-y-full', 'sm:scale-95');
+            modalContainer.classList.add('translate-y-0', 'sm:scale-100');
+            triggerHaptic();
+        }
+
+        function closeModal() {
+            modalContainer.classList.remove('translate-y-0', 'sm:scale-100');
+            modalContainer.classList.add('translate-y-full', 'sm:scale-95');
+            exerciseModal.classList.add('opacity-0', 'pointer-events-none');
+            exerciseForm.reset();
+            editExerciseId.value = '';
+            imagePreviewContainer.classList.add('hidden');
+        }
+
+        openNewModalBtn.addEventListener('click', () => {
+            exerciseForm.reset();
+            editExerciseId.value = '';
+            imagePreviewContainer.classList.add('hidden');
+            openModal(false);
+        });
+
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+
+        // Preview da imagem
+        formImage.addEventListener('input', (e) => {
+            const url = e.target.value.trim();
+            if (url) {
+                imagePreview.src = url;
+                imagePreviewContainer.classList.remove('hidden');
+            } else {
+                imagePreviewContainer.classList.add('hidden');
+            }
+        });
+
+        btnPresetImage.addEventListener('click', () => {
+            const presetImages = {
+                peito: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80',
+                costas: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&q=80',
+                pernas: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80',
+                ombros: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80',
+                bracos: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80',
+                abs: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80'
+            };
+            const cat = formCategory.value || 'peito';
+            formImage.value = presetImages[cat] || presetImages.peito;
+            imagePreview.src = formImage.value;
+            imagePreviewContainer.classList.remove('hidden');
+            triggerHaptic();
+        });
+
+        // Submit Form
+        exerciseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = editExerciseId.value;
+            const name = formName.value.trim();
+            const category = formCategory.value;
+            const sets = formSets.value.trim() || '3x 10 reps';
+            const target = formTarget.value.trim() || '';
+            const image = formImage.value.trim() || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';
+
+            if (id) {
+                const index = exercises.findIndex(e => e.id === id);
+                if (index !== -1) {
+                    exercises[index] = { ...exercises[index], name, category, sets, target, image };
+                    showToast('Exercício modificado!');
+                }
+            } else {
+                const newEx = {
+                    id: 'ex_' + Date.now(),
+                    name,
+                    category,
+                    sets,
+                    target,
+                    image,
+                    weight: 0
+                };
+                exercises.unshift(newEx);
+                showToast('Novo exercício adicionado!');
+            }
+
+            saveExercisesToStorage();
+            closeModal();
+            renderExercises();
+        });
+
+        // Editar
+        window.editExercise = function(id) {
+            const ex = exercises.find(e => e.id === id);
+            if (!ex) return;
+
+            editExerciseId.value = ex.id;
+            formName.value = ex.name;
+            formCategory.value = ex.category;
+            formSets.value = ex.sets || '';
+            formTarget.value = ex.target || '';
+            formImage.value = ex.image || '';
+
+            if (ex.image) {
+                imagePreview.src = ex.image;
+                imagePreviewContainer.classList.remove('hidden');
+            }
+
+            openModal(true);
+        };
+
+        // Excluir
+        window.deleteExercise = function(id) {
+            const ex = exercises.find(e => e.id === id);
+            if (!ex) return;
+
+            if (confirm(`Deseja remover "${ex.name}"?`)) {
+                exercises = exercises.filter(e => e.id !== id);
+                saveExercisesToStorage();
+                showToast('Exercício removido.');
+                renderExercises();
+            }
+        };
+
+        // Restaurar Padrões
+        restoreDefaultsBtn.addEventListener('click', () => {
+            if (confirm('Restaurar lista padrão de exercícios?')) {
+                exercises = [...DEFAULT_EXERCISES];
+                saveExercisesToStorage();
+                showToast('Padrões restaurados!');
+                renderExercises();
+            }
+        });
+
+        // Busca
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            if (searchQuery.length > 0) {
+                clearSearchBtn.classList.remove('hidden');
+            } else {
+                clearSearchBtn.classList.add('hidden');
+            }
+            renderExercises();
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearchBtn.classList.add('hidden');
+            renderExercises();
+        });
+
+        let toastTimeout;
+        function showToast(msg) {
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2000);
+        }
+
+        function setFormattedDate() {
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            currentDateStr.textContent = new Date().toLocaleDateString('pt-BR', options);
+        }
+
+        // --- STARTUP ---
+        window.onload = function() {
+            setFormattedDate();
+            initTheme();
+            loadExercises();
+            renderCategories();
+            renderExercises();
+        };
+    </script>
+</body>
+</html>
