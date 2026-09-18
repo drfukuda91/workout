@@ -84,7 +84,6 @@
 
             <!-- Botões de Ação do Topo -->
             <div class="flex items-center gap-1.5">
-                <!-- Status Supabase / Conexão -->
                 <button id="openSupabaseModalBtn" class="min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-card flex items-center gap-1.5 touch-active transition-all">
                     <div id="supabaseStatusDot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></div>
                     <span id="supabaseStatusText" class="hidden sm:inline text-xs">Nuvem</span>
@@ -134,9 +133,7 @@
         </section>
 
         <!-- Filtro por Categoria -->
-        <nav class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-xs font-medium -mx-4 px-4 sm:mx-0 sm:px-0" id="categoryNav">
-            <!-- Injetado dinamicamente -->
-        </nav>
+        <nav class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-xs font-medium -mx-4 px-4 sm:mx-0 sm:px-0" id="categoryNav"></nav>
 
         <!-- Barra de Busca -->
         <div class="relative">
@@ -148,9 +145,7 @@
         </div>
 
         <!-- Lista de Exercícios -->
-        <section class="space-y-3" id="exerciseList">
-            <!-- Exercícios serão renderizados aqui -->
-        </section>
+        <section class="space-y-3" id="exerciseList"></section>
 
     </main>
 
@@ -261,7 +256,10 @@
     </div>
 
     <script>
-        // --- BASE DE DADOS INITIAL (FALLBACK LOCAL) ---
+        // Configurações padrão de fábrica para o Supabase
+        const DEFAULT_SB_URL = 'https://tjosbhtafwkpdtfeczzv.supabase.co';
+        const DEFAULT_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3NiaHRhZndrcGR0ZmVjenp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzY3MjcsImV4cCI6MjEwNTMxMjcyN30.flHp68ZyO5jpJI6urkRAbX_YwrC4-WiggU2ot1WEQ1w';
+
         const DEFAULT_EXERCISES = [
             { id: 'ex_1', name: 'Supino Reto com Barra', category: 'peito', sets: '4x 8-12 reps', target: 'Peitoral Maior', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80', weight: 30 },
             { id: 'ex_2', name: 'Supino Inclinado Halteres', category: 'peito', sets: '3x 10-12 reps', target: 'Peitoral Superior', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80', weight: 22 },
@@ -286,14 +284,12 @@
             { id: 'abs', name: 'Abdômen', icon: 'disc' },
         ];
 
-        // --- ESTADO GLOBAL ---
         let supabaseClient = null;
         let isSupabaseActive = false;
         let exercises = [];
         let currentCategory = 'all';
         let searchQuery = '';
 
-        // --- REFERÊNCIAS DOM ---
         const categoryNav = document.getElementById('categoryNav');
         const exerciseList = document.getElementById('exerciseList');
         const currentCategoryTitle = document.getElementById('currentCategoryTitle');
@@ -305,7 +301,6 @@
         const themeIcon = document.getElementById('themeIcon');
         const currentDateStr = document.getElementById('currentDateStr');
 
-        // Status Supabase
         const openSupabaseModalBtn = document.getElementById('openSupabaseModalBtn');
         const supabaseStatusDot = document.getElementById('supabaseStatusDot');
         const supabaseStatusText = document.getElementById('supabaseStatusText');
@@ -317,7 +312,6 @@
         const sbKeyInput = document.getElementById('sbKeyInput');
         const disconnectSbBtn = document.getElementById('disconnectSbBtn');
 
-        // Modal Exercício
         const exerciseModal = document.getElementById('exerciseModal');
         const modalContainer = document.getElementById('modalContainer');
         const modalTitle = document.getElementById('modalTitle');
@@ -336,10 +330,16 @@
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const imagePreview = document.getElementById('imagePreview');
 
-        // --- INICIALIZAÇÃO SUPABASE ---
+        function sanitizeUrl(rawUrl) {
+            if (!rawUrl) return '';
+            return rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        }
+
         function initSupabase() {
-            const url = localStorage.getItem('pulse_sb_url');
-            const key = localStorage.getItem('pulse_sb_key');
+            let url = localStorage.getItem('pulse_sb_url') || DEFAULT_SB_URL;
+            let key = localStorage.getItem('pulse_sb_key') || DEFAULT_SB_KEY;
+
+            url = sanitizeUrl(url);
 
             if (url && key && window.supabase) {
                 try {
@@ -382,11 +382,10 @@
                     if (data && data.length > 0) {
                         exercises = data;
                     } else {
-                        // Se a tabela no Supabase estiver vazia, popula com o default
                         await syncDefaultsToSupabase();
                     }
                 } catch (e) {
-                    console.warn('Erro ao ler do Supabase, usando localStorage:', e);
+                    console.warn('Erro ao ler do Supabase, fallback LocalStorage:', e);
                     loadLocalExercises();
                 }
             } else {
@@ -401,7 +400,7 @@
                 await supabaseClient.from('exercises').upsert(DEFAULT_EXERCISES);
                 exercises = [...DEFAULT_EXERCISES];
             } catch (err) {
-                console.error("Erro ao sincronizar defaults:", err);
+                console.error("Erro ao sincronizar dados:", err);
             }
         }
 
@@ -419,20 +418,28 @@
             localStorage.setItem('pulse_custom_exercises', JSON.stringify(exercises));
         }
 
-        // --- BANCO DE DADOS: OPERAÇÕES CRUD ---
         async function saveExerciseDB(exerciseObj) {
+            const payload = {
+                id: String(exerciseObj.id),
+                name: exerciseObj.name,
+                category: exerciseObj.category,
+                sets: exerciseObj.sets || '',
+                target: exerciseObj.target || '',
+                weight: parseFloat(exerciseObj.weight) || 0,
+                image: exerciseObj.image || ''
+            };
+
             if (isSupabaseActive && supabaseClient) {
                 try {
                     const { error } = await supabaseClient
                         .from('exercises')
-                        .upsert([exerciseObj]);
+                        .upsert([payload]);
                     if (error) throw error;
                 } catch (err) {
-                    console.error('Erro ao salvar no Supabase:', err);
-                    showToast('Erro ao salvar na nuvem!');
+                    console.error('Erro no Supabase Upsert:', err);
+                    showToast('Erro na nuvem. Salvo localmente.');
                 }
             }
-            // Sempre faz backup no localStorage
             saveLocalExercises();
         }
 
@@ -442,16 +449,15 @@
                     const { error } = await supabaseClient
                         .from('exercises')
                         .delete()
-                        .eq('id', id);
+                        .eq('id', String(id));
                     if (error) throw error;
                 } catch (err) {
-                    console.error('Erro ao excluir no Supabase:', err);
+                    console.error('Erro no Supabase Delete:', err);
                 }
             }
             saveLocalExercises();
         }
 
-        // --- INTERFACE DE USUÁRIO E TEMA ---
         function initTheme() {
             const isDark = localStorage.getItem('pulse_theme') !== 'light';
             if (isDark) {
@@ -597,7 +603,7 @@
         }
 
         window.adjustWeight = function(id, delta) {
-            const exIndex = exercises.findIndex(e => e.id === id);
+            const exIndex = exercises.findIndex(e => String(e.id) === String(id));
             if (exIndex !== -1) {
                 let current = parseFloat(exercises[exIndex].weight) || 0;
                 let updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
@@ -610,7 +616,7 @@
         };
 
         window.updateExerciseWeight = function(id, value) {
-            const exIndex = exercises.findIndex(e => e.id === id);
+            const exIndex = exercises.findIndex(e => String(e.id) === String(id));
             if (exIndex !== -1) {
                 const val = parseFloat(value);
                 exercises[exIndex].weight = !isNaN(val) && val >= 0 ? val : 0;
@@ -628,7 +634,6 @@
             }
         }
 
-        // --- CONTROLE DOS MODAIS ---
         function openModal(isEdit = false) {
             modalTitle.textContent = isEdit ? 'Editar Exercício' : 'Novo Exercício';
             exerciseModal.classList.remove('opacity-0', 'pointer-events-none');
@@ -656,7 +661,6 @@
         closeModalBtn.addEventListener('click', closeModal);
         cancelModalBtn.addEventListener('click', closeModal);
 
-        // Supabase Modal
         openSupabaseModalBtn.addEventListener('click', () => {
             supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
             supabaseModalContainer.classList.remove('translate-y-full', 'sm:scale-95');
@@ -671,7 +675,7 @@
 
         supabaseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const url = sbUrlInput.value.trim();
+            const url = sanitizeUrl(sbUrlInput.value.trim());
             const key = sbKeyInput.value.trim();
 
             if (url && key) {
@@ -695,7 +699,6 @@
             fetchExercises();
         });
 
-        // Preview da imagem
         formImage.addEventListener('input', (e) => {
             const url = e.target.value.trim();
             if (url) {
@@ -722,7 +725,6 @@
             triggerHaptic();
         });
 
-        // Submit Form
         exerciseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -733,10 +735,10 @@
             const target = formTarget.value.trim() || '';
             const image = formImage.value.trim() || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';
 
-            const exObj = { id, name, category, sets, target, image, weight: 0 };
+            const exObj = { id: String(id), name, category, sets, target, image, weight: 0 };
 
             if (editExerciseId.value) {
-                const index = exercises.findIndex(e => e.id === id);
+                const index = exercises.findIndex(e => String(e.id) === String(id));
                 if (index !== -1) {
                     exObj.weight = exercises[index].weight || 0;
                     exercises[index] = exObj;
@@ -753,7 +755,7 @@
         });
 
         window.editExercise = function(id) {
-            const ex = exercises.find(e => e.id === id);
+            const ex = exercises.find(e => String(e.id) === String(id));
             if (!ex) return;
 
             editExerciseId.value = ex.id;
@@ -772,11 +774,11 @@
         };
 
         window.deleteExercise = async function(id) {
-            const ex = exercises.find(e => e.id === id);
+            const ex = exercises.find(e => String(e.id) === String(id));
             if (!ex) return;
 
             if (confirm(`Deseja remover "${ex.name}"?`)) {
-                exercises = exercises.filter(e => e.id !== id);
+                exercises = exercises.filter(e => String(e.id) !== String(id));
                 await deleteExerciseDB(id);
                 showToast('Exercício removido.');
                 renderExercises();
@@ -796,7 +798,6 @@
             }
         });
 
-        // Busca
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value;
             if (searchQuery.length > 0) {
@@ -833,7 +834,6 @@
             currentDateStr.textContent = new Date().toLocaleDateString('pt-BR', options);
         }
 
-        // --- STARTUP ---
         window.onload = async function() {
             setFormattedDate();
             initTheme();
