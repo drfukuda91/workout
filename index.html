@@ -65,7 +65,6 @@
             transform: scale(0.96);
         }
 
-        /* Chrome, Safari, Edge, Opera - Remove arrows from number input */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -78,86 +77,139 @@
 </head>
 <body class="bg-gray-950 dark:bg-dark-bg text-gray-100 min-h-screen pb-24 antialiased selection:bg-brand-500 selection:text-white">
 
-    <header class="sticky top-0 z-40 backdrop-blur-xl bg-gray-950/90 dark:bg-dark-bg/90 border-b border-gray-800 dark:border-dark-border">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+    <!-- SEÇÃO DE AUTENTICAÇÃO -->
+    <div id="authSection" class="fixed inset-0 z-50 bg-dark-bg flex items-center justify-center p-4">
+        <div class="bg-dark-card border border-dark-border rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
-            <!-- Logo & Data -->
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center text-white font-black shadow-lg shadow-brand-500/30">
-                    <i data-lucide="dumbbell" class="w-5 h-5"></i>
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-brand-500 flex items-center justify-center text-white font-black shadow-lg shadow-brand-500/30 mb-3">
+                    <i data-lucide="dumbbell" class="w-8 h-8"></i>
                 </div>
-                <div>
-                    <span class="font-extrabold text-base sm:text-lg tracking-tight block leading-none text-white">HiperCore</span>
-                    <span id="currentDateStr" class="text-[10px] text-gray-400 font-medium uppercase tracking-wider"></span>
-                </div>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight">HiperCore</h1>
+                <p class="text-xs text-gray-400 mt-1" id="authSubtitle">Acesse sua conta individual de treinos</p>
             </div>
 
-            <!-- Botões de Ação no Topo -->
-            <div class="flex items-center gap-1.5">
-                <button id="openSupabaseModalBtn" class="min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card hover:bg-dark-hover flex items-center gap-1.5 touch-active transition-all text-gray-300">
-                    <div id="supabaseStatusDot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></div>
-                    <span id="supabaseStatusText" class="hidden sm:inline text-xs">Nuvem</span>
-                </button>
+            <!-- Formulário de Auth -->
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">E-mail / Usuário</label>
+                    <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-4 py-3.5 text-sm rounded-xl border border-gray-800 dark:border-dark-border bg-dark-input text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
 
-                <button id="openNewModalBtn" class="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-brand-500/25 touch-active transition-all">
-                    <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
-                    <span class="hidden sm:inline">Novo Exercício</span>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Senha</label>
+                    <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-4 py-3.5 text-sm rounded-xl border border-gray-800 dark:border-dark-border bg-dark-input text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                </div>
+
+                <div class="pt-2 space-y-2">
+                    <button type="submit" id="authSubmitBtn" class="w-full min-h-[48px] px-6 py-3 text-sm font-bold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white rounded-2xl shadow-lg shadow-brand-500/25 touch-active transition-all">
+                        Entrar na Conta
+                    </button>
+                    <button type="button" id="toggleAuthModeBtn" class="w-full text-xs font-semibold text-gray-400 hover:text-brand-500 py-2 transition-colors">
+                        Não tem uma conta? Cadastre-se
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-dark-border flex justify-between items-center text-xs">
+                <span class="text-gray-500">Status Supabase:</span>
+                <button id="openSupabaseModalBtnAuth" class="text-brand-500 hover:underline font-bold flex items-center gap-1.5">
+                    <div id="supabaseStatusDotAuth" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+                    <span>Configurar Conexão</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL -->
+    <div id="appSection" class="hidden">
+        <header class="sticky top-0 z-40 backdrop-blur-xl bg-gray-950/90 dark:bg-dark-bg/90 border-b border-gray-800 dark:border-dark-border">
+            <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
                 
-                <button id="themeToggleBtn" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card text-gray-400 hover:text-white flex items-center justify-center touch-active transition-all">
-                    <i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>
+                <!-- Logo & Data -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center text-white font-black shadow-lg shadow-brand-500/30">
+                        <i data-lucide="dumbbell" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-base sm:text-lg tracking-tight block leading-none text-white">HiperCore</span>
+                        <span id="currentDateStr" class="text-[10px] text-gray-400 font-medium uppercase tracking-wider"></span>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação no Topo -->
+                <div class="flex items-center gap-1.5">
+                    <button id="openSupabaseModalBtn" class="min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card hover:bg-dark-hover flex items-center gap-1.5 touch-active transition-all text-gray-300">
+                        <div id="supabaseStatusDot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></div>
+                        <span id="supabaseStatusText" class="hidden sm:inline text-xs">Nuvem</span>
+                    </button>
+
+                    <button id="openNewModalBtn" class="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-brand-500/25 touch-active transition-all">
+                        <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+                        <span class="hidden sm:inline">Novo Exercício</span>
+                    </button>
+                    
+                    <button id="themeToggleBtn" class="min-h-[44px] min-w-[44px] p-2.5 rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card text-gray-400 hover:text-white flex items-center justify-center touch-active transition-all">
+                        <i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>
+                    </button>
+
+                    <button id="logoutBtn" class="min-h-[44px] px-3 py-2 text-xs font-bold rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center gap-1.5 touch-active transition-all" title="Sair da Conta">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Sair</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Categorias (Tabs Scrolláveis) -->
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-2.5 px-4 bg-dark-card/80 border-t border-gray-800/50 dark:border-dark-border/50" id="categoryTabs"></div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 pt-4 space-y-4">
+
+            <!-- Banner Bento Grid -->
+            <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="col-span-2 p-4 sm:p-5 rounded-3xl border border-gray-800 dark:border-dark-border bg-dark-card flex flex-col justify-between shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-brand-500 bg-brand-500/15 border border-brand-500/20 px-2.5 py-1 rounded-xl">Treino Ativo</span>
+                            <span id="userEmailBadge" class="text-[11px] font-medium text-gray-400 truncate max-w-[150px]"></span>
+                        </div>
+                        <h1 id="currentCategoryTitle" class="text-lg sm:text-xl font-bold tracking-tight mt-2 text-white">Peito</h1>
+                        <p class="text-xs text-gray-400 mt-0.5 hidden sm:block">Ajuste suas cargas e acompanhe sua evolução em tempo real.</p>
+                    </div>
+                </div>
+
+                <div class="col-span-2 sm:col-span-1 p-4 sm:p-5 rounded-3xl border border-gray-800 dark:border-dark-border bg-dark-card flex items-center justify-around gap-2 shadow-lg">
+                    <div class="text-center">
+                        <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total</span>
+                        <span id="totalExerciseCount" class="text-2xl font-black text-white">0</span>
+                    </div>
+                    <div class="h-8 w-px bg-gray-800 dark:bg-dark-border"></div>
+                    <div class="text-center">
+                        <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Com Carga</span>
+                        <span id="savedWeightsCount" class="text-2xl font-black text-brand-500">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Barra de Busca -->
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                <input type="text" id="searchInput" placeholder="Buscar exercício ou grupo muscular..." class="w-full pl-11 pr-10 py-3.5 text-sm rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-md placeholder-gray-500">
+                <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl text-gray-400 hover:text-white touch-active">
+                    <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-        </div>
 
-        <!-- Categorias (Tabs Scrolláveis) -->
-        <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-2.5 px-4 bg-dark-card/80 border-t border-gray-800/50 dark:border-dark-border/50" id="categoryTabs">
-            <!-- Tabs renderizadas via JS sem a opção 'Todos' -->
-        </div>
-    </header>
+            <!-- Lista de Exercícios -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-4" id="exerciseList"></section>
 
-    <main class="max-w-4xl mx-auto px-4 pt-4 space-y-4">
+        </main>
+    </div>
 
-        <!-- Banner Bento Grid -->
-        <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <div class="col-span-2 p-4 sm:p-5 rounded-3xl border border-gray-800 dark:border-dark-border bg-dark-card flex flex-col justify-between shadow-lg relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-brand-500 bg-brand-500/15 border border-brand-500/20 px-2.5 py-1 rounded-xl">Treino Ativo</span>
-                    </div>
-                    <h1 id="currentCategoryTitle" class="text-lg sm:text-xl font-bold tracking-tight mt-2 text-white">Peito</h1>
-                    <p class="text-xs text-gray-400 mt-0.5 hidden sm:block">Ajuste suas cargas e acompanhe sua evolução em tempo real.</p>
-                </div>
-            </div>
-
-            <div class="col-span-2 sm:col-span-1 p-4 sm:p-5 rounded-3xl border border-gray-800 dark:border-dark-border bg-dark-card flex items-center justify-around gap-2 shadow-lg">
-                <div class="text-center">
-                    <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total</span>
-                    <span id="totalExerciseCount" class="text-2xl font-black text-white">0</span>
-                </div>
-                <div class="h-8 w-px bg-gray-800 dark:bg-dark-border"></div>
-                <div class="text-center">
-                    <span class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Com Carga</span>
-                    <span id="savedWeightsCount" class="text-2xl font-black text-brand-500">0</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Barra de Busca -->
-        <div class="relative">
-            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-            <input type="text" id="searchInput" placeholder="Buscar exercício ou grupo muscular..." class="w-full pl-11 pr-10 py-3.5 text-sm rounded-2xl border border-gray-800 dark:border-dark-border bg-dark-card text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all shadow-md placeholder-gray-500">
-            <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl text-gray-400 hover:text-white touch-active">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-        </div>
-
-        <!-- Lista de Exercícios -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-4" id="exerciseList"></section>
-
-    </main>
-
+    <!-- MODAL DE CRIAR/EDITAR EXERCÍCIO -->
     <div id="exerciseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-dark-card border-t sm:border border-gray-800 dark:border-dark-border rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto" id="modalContainer">
             
@@ -217,12 +269,13 @@
 
                 <div class="pt-3 flex items-center justify-end gap-3 pb-2 sm:pb-0">
                     <button type="button" id="cancelModalBtn" class="min-h-[44px] px-5 py-2.5 text-xs font-semibold text-gray-400 hover:bg-dark-hover rounded-2xl touch-active">Cancelar</button>
-                    <button type="submit" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white rounded-2xl shadow-lg shadow-brand-500/20 touch-active">Salvar Exercício</button>
+                    <button type="submit" id="saveExerciseBtn" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white rounded-2xl shadow-lg shadow-brand-500/20 touch-active">Salvar Exercício</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- MODAL DE CONFIGURAÇÃO DO SUPABASE -->
     <div id="supabaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-dark-card border-t sm:border border-gray-800 dark:border-dark-border rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-all duration-300" id="supabaseModalContainer">
             
@@ -237,7 +290,7 @@
             </div>
 
             <form id="supabaseForm" class="mt-4 space-y-4">
-                <p class="text-xs text-gray-400">Insira suas credenciais do projeto Supabase para sincronizar treinos e cargas na nuvem.</p>
+                <p class="text-xs text-gray-400">Insira suas credenciais do projeto Supabase para ativar a autenticação e sincronização na nuvem.</p>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Project URL</label>
@@ -246,7 +299,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Anon / Public API Key</label>
-                    <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-800 dark:border-dark-border bg-dark-input text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                    <input type="password" id="sbKeyInput" placeholder="eyJhbGciOi..." class="w-full px-3.5 py-3 text-sm rounded-xl border border-gray-800 dark:border-dark-border bg-dark-input text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50">
                 </div>
 
                 <div class="pt-2 flex items-center justify-between gap-3">
@@ -264,14 +317,14 @@
     </div>
 
     <script>
-        // Categorias do App (SEM a opção 'Todos')
+        // Categorias do App
         const CATEGORIES = [
             { id: 'peito', label: 'Peito', icon: 'shield' },
             { id: 'costas', label: 'Costas', icon: 'shield' },
             { id: 'pernas', label: 'Pernas', icon: 'square' },
             { id: 'ombros', label: 'Ombros', icon: 'dumbbell' },
-            { id: 'biceps', label: 'Bíceps', icon: 'BicepsFlexed' },
-            { id: 'triceps', label: 'Tríceps', icon: 'BicepsFlexed' },
+            { id: 'biceps', label: 'Bíceps', icon: 'biceps-flexed' },
+            { id: 'triceps', label: 'Tríceps', icon: 'biceps-flexed' },
             { id: 'abs', label: 'Abdômen', icon: 'disc' }
         ];
 
@@ -281,7 +334,10 @@
         let exercises = [];
         let supabaseClient = null;
         let isSupabaseActive = false;
+        let currentUser = null;
+        let isSignUpMode = false;
         let toastTimeout = null;
+        let realtimeSubscription = null;
 
         // --- TEMA (DARK / LIGHT) ---
         function initTheme() {
@@ -307,34 +363,33 @@
         // --- SUPABASE & ARMAZENAMENTO ---
         function sanitizeUrl(url) {
             if (!url) return '';
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                return 'https://' + url;
+            let cleaned = url.trim();
+            if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+                cleaned = 'https://' + cleaned;
             }
-            return url;
+            return cleaned;
         }
 
         function updateSupabaseStatusUI(connected) {
-            const dot = document.getElementById('supabaseStatusDot');
+            const dots = [document.getElementById('supabaseStatusDot'), document.getElementById('supabaseStatusDotAuth')];
             const text = document.getElementById('supabaseStatusText');
             const btn = document.getElementById('openSupabaseModalBtn');
 
-            if (dot) {
-                dot.className = connected 
-                    ? 'w-2.5 h-2.5 rounded-full bg-[#00ff66] shadow-[0_0_10px_#00ff66]' 
-                    : 'w-2.5 h-2.5 rounded-full bg-[#ff0055] shadow-[0_0_10px_#ff0055] animate-pulse';
-            }
+            dots.forEach(dot => {
+                if (dot) {
+                    dot.className = connected 
+                        ? 'w-2.5 h-2.5 rounded-full bg-[#00ff66] shadow-[0_0_10px_#00ff66]' 
+                        : 'w-2.5 h-2.5 rounded-full bg-[#ff0055] shadow-[0_0_10px_#ff0055] animate-pulse';
+                }
+            });
 
             if (btn) {
-                if (connected) {
-                    btn.className = "min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-[#00ff66]/40 bg-[#00ff66]/10 hover:bg-[#00ff66]/20 flex items-center gap-1.5 touch-active transition-all text-[#00ff66] shadow-[0_0_12px_rgba(0,255,102,0.2)]";
-                } else {
-                    btn.className = "min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-[#ff0055]/40 bg-[#ff0055]/10 hover:bg-[#ff0055]/20 flex items-center gap-1.5 touch-active transition-all text-[#ff0055] shadow-[0_0_12px_rgba(255,0,85,0.2)]";
-                }
+                btn.className = connected 
+                    ? "min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-[#00ff66]/40 bg-[#00ff66]/10 hover:bg-[#00ff66]/20 flex items-center gap-1.5 touch-active transition-all text-[#00ff66] shadow-[0_0_12px_rgba(0,255,102,0.2)]"
+                    : "min-h-[44px] px-3 py-2 text-xs font-semibold rounded-2xl border border-[#ff0055]/40 bg-[#ff0055]/10 hover:bg-[#ff0055]/20 flex items-center gap-1.5 touch-active transition-all text-[#ff0055] shadow-[0_0_12px_rgba(255,0,85,0.2)]";
             }
 
-            if (text) {
-                text.textContent = connected ? 'Nuvem OK' : 'Nuvem Off';
-            }
+            if (text) text.textContent = connected ? 'Nuvem OK' : 'Nuvem Off';
         }
 
         function initSupabase() {
@@ -348,7 +403,7 @@
                     if (sbUrlInput) sbUrlInput.value = url;
                     if (sbKeyInput) sbKeyInput.value = key;
                 } catch (err) {
-                    console.error("Supabase init error:", err);
+                    console.error("Erro na inicialização do Supabase:", err);
                     isSupabaseActive = false;
                     updateSupabaseStatusUI(false);
                 }
@@ -358,72 +413,184 @@
             }
         }
 
-        async function fetchExercises() {
-            if (isSupabaseActive && supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.from('exercises').select('*');
-                    if (!error && data && data.length > 0) {
-                        exercises = data;
-                        localStorage.setItem('hipercore_exercises', JSON.stringify(exercises));
-                        renderExercises();
-                        updateStats();
-                        return;
-                    }
-                } catch (e) {
-                    console.warn("Supabase fetch failed, fallback to local:", e);
-                }
+        // --- AUTENTICAÇÃO ---
+        async function checkSession() {
+            if (!isSupabaseActive || !supabaseClient) {
+                showAuthSection(true);
+                return;
             }
-            loadExercisesLocal();
-            renderExercises();
-            updateStats();
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                currentUser = session.user;
+                showAuthSection(false);
+                if (userEmailBadge) userEmailBadge.textContent = currentUser.email;
+                await fetchExercises();
+                subscribeRealtime();
+            } else {
+                showAuthSection(true);
+            }
         }
 
-        function loadExercisesLocal() {
-            const saved = localStorage.getItem('hipercore_exercises');
-            if (saved) {
-                try {
-                    exercises = JSON.parse(saved);
-                } catch (e) {
-                    exercises = [];
-                }
+        function showAuthSection(show) {
+            if (show) {
+                authSection.classList.remove('hidden');
+                appSection.classList.add('hidden');
+            } else {
+                authSection.classList.add('hidden');
+                appSection.classList.remove('hidden');
             }
-            if (!exercises || exercises.length === 0) {
-                exercises = getDefaultExercises();
-                localStorage.setItem('hipercore_exercises', JSON.stringify(exercises));
+        }
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isSupabaseActive || !supabaseClient) {
+                alert('Configure as credenciais do Supabase no botão abaixo antes de entrar.');
+                supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
+                return;
+            }
+
+            const email = authEmail.value.trim();
+            const password = authPassword.value.trim();
+            authSubmitBtn.disabled = true;
+
+            try {
+                if (isSignUpMode) {
+                    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                    if (error) throw error;
+                    showToast('Conta criada com sucesso!');
+                    if (data.user) {
+                        currentUser = data.user;
+                        if (userEmailBadge) userEmailBadge.textContent = currentUser.email;
+                        showAuthSection(false);
+                        await fetchExercises();
+                        subscribeRealtime();
+                    }
+                } else {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    showToast('Login efetuado com sucesso!');
+                    currentUser = data.user;
+                    if (userEmailBadge) userEmailBadge.textContent = currentUser.email;
+                    showAuthSection(false);
+                    await fetchExercises();
+                    subscribeRealtime();
+                }
+            } catch (err) {
+                alert(err.message || 'Erro na Autenticação');
+            } finally {
+                authSubmitBtn.disabled = false;
+            }
+        });
+
+        toggleAuthModeBtn.addEventListener('click', () => {
+            isSignUpMode = !isSignUpMode;
+            authSubmitBtn.textContent = isSignUpMode ? 'Criar Minha Conta' : 'Entrar na Conta';
+            toggleAuthModeBtn.textContent = isSignUpMode ? 'Já possui conta? Faça Login' : 'Não tem uma conta? Cadastre-se';
+            authSubtitle.textContent = isSignUpMode ? 'Cadastre-se para ter seu espaço exclusivo' : 'Acesse sua conta individual de treinos';
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            if (supabaseClient) {
+                if (realtimeSubscription) supabaseClient.removeChannel(realtimeSubscription);
+                await supabaseClient.auth.signOut();
+            }
+            currentUser = null;
+            exercises = [];
+            showAuthSection(true);
+            showToast('Você saiu da conta.');
+        });
+
+        // --- BUSCA E OPERAÇÕES EXCLUSIVAS NO SUPABASE ---
+        async function fetchExercises() {
+            if (!isSupabaseActive || !supabaseClient || !currentUser) {
+                exercises = [];
+                renderExercises();
+                updateStats();
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('exercises')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+
+                exercises = data || [];
+                renderExercises();
+                updateStats();
+            } catch (e) {
+                console.error("Erro ao buscar exercícios do Supabase:", e);
+                showToast("Erro ao carregar do banco de dados");
             }
         }
 
         async function saveExerciseDB(ex) {
-            const idx = exercises.findIndex(e => String(e.id) === String(ex.id));
-            if (idx !== -1) {
-                exercises[idx] = ex;
-            } else {
-                exercises.unshift(ex);
-            }
-            localStorage.setItem('hipercore_exercises', JSON.stringify(exercises));
+            if (!currentUser || !supabaseClient || !isSupabaseActive) return false;
 
-            if (isSupabaseActive && supabaseClient) {
-                try {
-                    await supabaseClient.from('exercises').upsert([ex]);
-                } catch (e) {
-                    console.error("Supabase save error:", e);
-                }
+            const payload = {
+                id: ex.id,
+                user_id: currentUser.id,
+                name: ex.name,
+                category: ex.category,
+                sets: ex.sets,
+                target: ex.target,
+                weight: parseFloat(ex.weight) || 0,
+                unit: ex.unit || 'kg',
+                image: ex.image
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('exercises')
+                    .upsert([payload]);
+
+                if (error) throw error;
+                await fetchExercises();
+                return true;
+            } catch (e) {
+                console.error("Erro ao salvar exercício no Supabase:", e);
+                alert("Erro ao gravar no Supabase: " + (e.message || 'Erro desconhecido'));
+                return false;
             }
-            updateStats();
         }
 
         async function deleteExerciseDB(id) {
-            exercises = exercises.filter(e => String(e.id) !== String(id));
-            localStorage.setItem('hipercore_exercises', JSON.stringify(exercises));
+            if (!currentUser || !supabaseClient || !isSupabaseActive) return;
 
-            if (isSupabaseActive && supabaseClient) {
-                try {
-                    await supabaseClient.from('exercises').delete().eq('id', id);
-                } catch (e) {
-                    console.error("Supabase delete error:", e);
-                }
+            try {
+                const { error } = await supabaseClient
+                    .from('exercises')
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+                await fetchExercises();
+            } catch (e) {
+                console.error("Erro ao remover no Supabase:", e);
+                alert("Erro ao excluir do Supabase: " + (e.message || 'Erro desconhecido'));
             }
-            updateStats();
+        }
+
+        // Inscreve no canal de Realtime do Supabase
+        function subscribeRealtime() {
+            if (!supabaseClient || !currentUser || realtimeSubscription) return;
+
+            realtimeSubscription = supabaseClient
+                .channel('realtime_exercises')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'exercises',
+                    filter: `user_id=eq.${currentUser.id}` 
+                }, () => {
+                    fetchExercises();
+                })
+                .subscribe();
         }
 
         function updateStats() {
@@ -436,7 +603,7 @@
             }
         }
 
-        // --- RENDERIZAÇÃO DE INTERFACE ---
+        // --- INTERFACE DE USUÁRIO ---
         function renderCategoryTabs() {
             const container = document.getElementById('categoryTabs');
             if (!container) return;
@@ -472,7 +639,6 @@
             const list = document.getElementById('exerciseList');
             if (!list) return;
 
-            // Filtra por Categoria e Busca
             const filtered = exercises.filter(e => {
                 const matchesCategory = (e.category || '').toLowerCase() === activeCategory.toLowerCase();
                 const matchesSearch = searchQuery === '' || 
@@ -486,7 +652,7 @@
                     <div class="col-span-full py-12 text-center text-gray-500">
                         <i data-lucide="dumbbell" class="w-12 h-12 mx-auto mb-3 stroke-1 opacity-40"></i>
                         <p class="text-base font-medium text-gray-400">Nenhum exercício encontrado</p>
-                        <p class="text-xs text-gray-600 mt-1">Toque no botão "Novo Exercício" para adicionar.</p>
+                        <p class="text-xs text-gray-600 mt-1">Toque em "Novo Exercício" para adicionar seu treino.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -499,7 +665,6 @@
 
                 return `
                 <div class="bg-dark-card border border-dark-border rounded-3xl overflow-hidden shadow-xl transition-all duration-300 hover:border-brand-500/40 flex flex-col justify-between" data-id="${ex.id}">
-                    <!-- Container de Imagem -->
                     <div class="relative w-full h-44 sm:h-52 bg-black flex items-center justify-center overflow-hidden cursor-pointer group" onclick="openImageModal('${ex.image || ''}')">
                         ${ex.image ? `
                             <img src="${ex.image}" alt="${ex.name}" class="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='https://placehold.co/600x400/121215/ff5500?text=Sem+Imagem';">
@@ -514,7 +679,6 @@
                         </div>
                     </div>
 
-                    <!-- Informações do Exercício -->
                     <div class="p-4 space-y-3.5 flex-1 flex flex-col justify-between">
                         <div>
                             <div class="flex items-start justify-between gap-2">
@@ -540,7 +704,6 @@
                             ` : ''}
                         </div>
 
-                        <!-- Controle de Carga Direta e Seletor de Unidade -->
                         <div class="bg-dark-input p-3 rounded-2xl border border-dark-border space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Carga</span>
@@ -581,40 +744,37 @@
         }
 
         // --- AÇÕES DO USUÁRIO ---
-        window.adjustWeight = function(id, delta) {
-            const exIndex = exercises.findIndex(e => String(e.id) === String(id));
-            if (exIndex !== -1) {
-                let current = parseFloat(exercises[exIndex].weight) || 0;
+        window.adjustWeight = async function(id, delta) {
+            const ex = exercises.find(e => String(e.id) === String(id));
+            if (ex) {
+                let current = parseFloat(ex.weight) || 0;
                 let updated = Math.max(0, current + delta);
-                exercises[exIndex].weight = updated;
+                ex.weight = updated;
                 
-                saveExerciseDB(exercises[exIndex]);
                 triggerHaptic();
-                renderExercises();
+                await saveExerciseDB(ex);
             }
         };
 
-        window.updateExerciseWeight = function(id, value) {
-            const exIndex = exercises.findIndex(e => String(e.id) === String(id));
-            if (exIndex !== -1) {
+        window.updateExerciseWeight = async function(id, value) {
+            const ex = exercises.find(e => String(e.id) === String(id));
+            if (ex) {
                 const val = parseFloat(value);
-                exercises[exIndex].weight = !isNaN(val) && val >= 0 ? val : 0;
+                ex.weight = !isNaN(val) && val >= 0 ? val : 0;
                 
-                saveExerciseDB(exercises[exIndex]);
                 triggerHaptic();
-                showToast('Carga atualizada!');
-                renderExercises();
+                const ok = await saveExerciseDB(ex);
+                if (ok) showToast('Carga atualizada no banco!');
             }
         };
 
-        window.updateExerciseUnit = function(id, unitValue) {
-            const exIndex = exercises.findIndex(e => String(e.id) === String(id));
-            if (exIndex !== -1) {
-                exercises[exIndex].unit = unitValue;
-                saveExerciseDB(exercises[exIndex]);
+        window.updateExerciseUnit = async function(id, unitValue) {
+            const ex = exercises.find(e => String(e.id) === String(id));
+            if (ex) {
+                ex.unit = unitValue;
                 triggerHaptic();
-                showToast('Unidade alterada!');
-                renderExercises();
+                const ok = await saveExerciseDB(ex);
+                if (ok) showToast('Unidade alterada no banco!');
             }
         };
 
@@ -667,10 +827,15 @@
         closeModalBtn.addEventListener('click', closeModal);
         cancelModalBtn.addEventListener('click', closeModal);
 
-        openSupabaseModalBtn.addEventListener('click', () => {
-            supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
-            supabaseModalContainer.classList.remove('translate-y-full', 'sm:scale-95');
-            supabaseModalContainer.classList.add('translate-y-0', 'sm:scale-100');
+        const openSupabaseBtns = [document.getElementById('openSupabaseModalBtn'), document.getElementById('openSupabaseModalBtnAuth')];
+        openSupabaseBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
+                    supabaseModalContainer.classList.remove('translate-y-full', 'sm:scale-95');
+                    supabaseModalContainer.classList.add('translate-y-0', 'sm:scale-100');
+                });
+            }
         });
 
         closeSupabaseModalBtn.addEventListener('click', () => {
@@ -681,14 +846,14 @@
 
         supabaseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const url = sanitizeUrl(sbUrlInput.value.trim());
+            const url = sanitizeUrl(sbUrlInput.value);
             const key = sbKeyInput.value.trim();
 
             if (url && key) {
                 localStorage.setItem('pulse_sb_url', url);
                 localStorage.setItem('pulse_sb_key', key);
                 initSupabase();
-                await fetchExercises();
+                await checkSession();
                 showToast('Supabase Conectado!');
             }
             closeSupabaseModalBtn.click();
@@ -699,10 +864,11 @@
             localStorage.removeItem('pulse_sb_key');
             supabaseClient = null;
             isSupabaseActive = false;
+            currentUser = null;
             updateSupabaseStatusUI(false);
-            showToast('Modo Local Ativado.');
+            showAuthSection(true);
+            showToast('Desconectado.');
             closeSupabaseModalBtn.click();
-            fetchExercises();
         });
 
         themeToggleBtn.addEventListener('click', toggleTheme);
@@ -744,24 +910,24 @@
             const target = formTarget.value.trim() || '';
             const image = formImage.value.trim() || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80';
 
-            const exObj = { id: String(id), name, category, sets, target, image, weight: 0, unit: 'kg' };
+            const existing = exercises.find(ex => String(ex.id) === String(id));
+            const weight = existing ? existing.weight : 0;
+            const unit = existing ? existing.unit : 'kg';
 
-            if (editExerciseId.value) {
-                const index = exercises.findIndex(e => String(e.id) === String(id));
-                if (index !== -1) {
-                    exObj.weight = exercises[index].weight || 0;
-                    exObj.unit = exercises[index].unit || 'kg';
-                    exercises[index] = exObj;
-                    showToast('Exercício modificado!');
-                }
-            } else {
-                exercises.unshift(exObj);
-                showToast('Novo exercício adicionado!');
+            const exObj = { id: String(id), name, category, sets, target, image, weight, unit };
+
+            saveExerciseBtn.disabled = true;
+            saveExerciseBtn.textContent = "Salvando...";
+
+            const ok = await saveExerciseDB(exObj);
+
+            saveExerciseBtn.disabled = false;
+            saveExerciseBtn.textContent = "Salvar Exercício";
+
+            if (ok) {
+                showToast(editExerciseId.value ? 'Exercício atualizado no banco!' : 'Novo exercício criado no banco!');
+                closeModal();
             }
-
-            await saveExerciseDB(exObj);
-            closeModal();
-            renderExercises();
         });
 
         window.editExercise = function(id) {
@@ -787,10 +953,9 @@
             const ex = exercises.find(e => String(e.id) === String(id));
             if (!ex) return;
 
-            if (confirm(`Deseja remover "${ex.name}"?`)) {
+            if (confirm(`Deseja remover "${ex.name}" do banco de dados?`)) {
                 await deleteExerciseDB(id);
                 showToast('Exercício removido.');
-                renderExercises();
             }
         };
 
@@ -839,7 +1004,7 @@
             initTheme();
             initSupabase();
             renderCategoryTabs();
-            await fetchExercises();
+            await checkSession();
         };
     </script>
 </body>
