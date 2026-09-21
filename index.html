@@ -283,23 +283,6 @@
         let isSupabaseActive = false;
         let toastTimeout = null;
 
-        // Exercícios Padrão Iniciais
-        function getDefaultExercises() {
-            return [
-                { id: 'ex_1', name: 'Supino Reto com Barra', category: 'peito', sets: '4x 8-10', target: 'Peitoral Maior', weight: 60, unit: 'kg', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80' },
-                { id: 'ex_2', name: 'Supino Inclinado Halteres', category: 'peito', sets: '3x 10-12', target: 'Peitoral Superior', weight: 24, unit: 'kg', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80' },
-                { id: 'ex_3', name: 'Crossover no Cabo', category: 'peito', sets: '3x 12-15', target: 'Peitoral Medial', weight: 4, unit: 'barras', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80' },
-                { id: 'ex_4', name: 'Puxada Alta Frontal', category: 'costas', sets: '4x 10-12', target: 'Latíssimo do Dorso', weight: 8, unit: 'barras', image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&q=80' },
-                { id: 'ex_5', name: 'Remada Curvada', category: 'costas', sets: '4x 8-10', target: 'Dorso e Trapézio', weight: 50, unit: 'kg', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80' },
-                { id: 'ex_6', name: 'Agachamento Livre', category: 'pernas', sets: '4x 8-10', target: 'Quadríceps e Glúteos', weight: 80, unit: 'kg', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80' },
-                { id: 'ex_7', name: 'Leg Press 45°', category: 'pernas', sets: '4x 10-12', target: 'Quadríceps', weight: 160, unit: 'kg', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=500&q=80' },
-                { id: 'ex_8', name: 'Desenvolvimento Halteres', category: 'ombros', sets: '4x 10-12', target: 'Deltoide Anterior', weight: 18, unit: 'kg', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&q=80' },
-                { id: 'ex_9', name: 'Rosca Direta Barra W', category: 'biceps', sets: '3x 10-12', target: 'Bíceps Braquial', weight: 26, unit: 'kg', image: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80' },
-                { id: 'ex_10', name: 'Tríceps Corda Pulley', category: 'triceps', sets: '4x 12-15', target: 'Tríceps Braquial', weight: 6, unit: 'barras', image: 'https://images.unsplash.com/photo-1530822847156-5df684618728?w=500&q=80' },
-                { id: 'ex_11', name: 'Abdominal Infra na Barra', category: 'abs', sets: '3x 15', target: 'Abdômen Inferior', weight: 0, unit: 'kg', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&q=80' }
-            ];
-        }
-
         // --- TEMA (DARK / LIGHT) ---
         function initTheme() {
             const savedTheme = localStorage.getItem('hipercore_theme') || 'dark';
