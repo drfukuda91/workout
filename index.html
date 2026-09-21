@@ -115,8 +115,8 @@
             <div class="mt-6 pt-4 border-t border-dark-border flex justify-between items-center text-xs">
                 <span class="text-gray-500">Status Supabase:</span>
                 <button id="openSupabaseModalBtnAuth" class="text-brand-500 hover:underline font-bold flex items-center gap-1.5">
-                    <div id="supabaseStatusDotAuth" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
-                    <span>Configurar Conexão</span>
+                    <div id="supabaseStatusDotAuth" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></div>
+                    <span>Status da Conexão</span>
                 </button>
             </div>
         </div>
@@ -290,7 +290,7 @@
             </div>
 
             <form id="supabaseForm" class="mt-4 space-y-4">
-                <p class="text-xs text-gray-400">Insira suas credenciais do projeto Supabase para ativar a autenticação e sincronização na nuvem.</p>
+                <p class="text-xs text-gray-400">Sua aplicação está pré-configurada. Você pode alterar as chaves manualmente se desejar.</p>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Project URL</label>
@@ -303,8 +303,8 @@
                 </div>
 
                 <div class="pt-2 flex items-center justify-between gap-3">
-                    <button type="button" id="disconnectSbBtn" class="text-xs font-bold text-red-500 hover:underline touch-active">Desconectar</button>
-                    <button type="submit" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 text-white rounded-2xl shadow-lg shadow-brand-500/20 touch-active">Salvar e Conectar</button>
+                    <button type="button" id="disconnectSbBtn" class="text-xs font-bold text-red-500 hover:underline touch-active">Restaurar Padrão</button>
+                    <button type="submit" class="min-h-[44px] px-6 py-2.5 text-xs font-bold bg-brand-500 hover:bg-brand-600 text-white rounded-2xl shadow-lg shadow-brand-500/20 touch-active">Salvar Credenciais</button>
                 </div>
             </form>
         </div>
@@ -317,6 +317,10 @@
     </div>
 
     <script>
+        // CREDENCIAIS PADRÃO DO SUPABASE EMBUTIDAS
+        const DEFAULT_SUPABASE_URL = 'https://tjosbhtafwkpdtfeczzv.supabase.co';
+        const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3NiaHRhZndrcGR0ZmVjenp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzY3MjcsImV4cCI6MjEwNTMxMjcyN30.flHp68ZyO5jpJI6urkRAbX_YwrC4-WiggU2ot1WEQ1w';
+
         // Categorias do App
         const CATEGORIES = [
             { id: 'peito', label: 'Peito', icon: 'shield' },
@@ -393,8 +397,9 @@
         }
 
         function initSupabase() {
-            const url = localStorage.getItem('pulse_sb_url');
-            const key = localStorage.getItem('pulse_sb_key');
+            const url = localStorage.getItem('pulse_sb_url') || DEFAULT_SUPABASE_URL;
+            const key = localStorage.getItem('pulse_sb_key') || DEFAULT_SUPABASE_KEY;
+
             if (url && key && window.supabase) {
                 try {
                     supabaseClient = window.supabase.createClient(url, key);
@@ -445,8 +450,7 @@
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!isSupabaseActive || !supabaseClient) {
-                alert('Configure as credenciais do Supabase no botão abaixo antes de entrar.');
-                supabaseModal.classList.remove('opacity-0', 'pointer-events-none');
+                alert('Falha ao conectar com o Supabase.');
                 return;
             }
 
@@ -854,7 +858,7 @@
                 localStorage.setItem('pulse_sb_key', key);
                 initSupabase();
                 await checkSession();
-                showToast('Supabase Conectado!');
+                showToast('Configurações atualizadas!');
             }
             closeSupabaseModalBtn.click();
         });
@@ -862,12 +866,8 @@
         disconnectSbBtn.addEventListener('click', () => {
             localStorage.removeItem('pulse_sb_url');
             localStorage.removeItem('pulse_sb_key');
-            supabaseClient = null;
-            isSupabaseActive = false;
-            currentUser = null;
-            updateSupabaseStatusUI(false);
-            showAuthSection(true);
-            showToast('Desconectado.');
+            initSupabase();
+            showToast('Restaurado para o padrão.');
             closeSupabaseModalBtn.click();
         });
 
